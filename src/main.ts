@@ -988,11 +988,11 @@ if (!startup && !started) {
             onWebContentsLoadedCallbacks.push((): void => void handleFileOpen(filePath));
         }
     });
-    function handleArgv(originalArgv: string[]): void {
+    function handleArgv(originalArgv: string[], secondInstance: boolean = false): void {
         const argv: string[] = originalArgv.slice(1 + +(originalArgv[1] === "--process-start-args"));
         if (argv.filter((arg: string): boolean => arg !== "--allow-file-access-from-files").length === 0) {
             // (lastFocusedMainWindows.at(-1) ?? app)?.focus();
-            createWindow();
+            if (secondInstance) createWindow();
             return;
         }
         const filePath: string | undefined = argv.find((arg: string): boolean => arg !== "." && /^(?!-)/.test(arg));
@@ -1009,9 +1009,9 @@ if (!startup && !started) {
         // const dateISOString: string = new Date().toISOString().replaceAll(":", "_");
         // writeFileSync(path.join(APP_DATA_FOLDER_PATH, `STARTUP_${dateISOString}.LOG`), `[${new Date().toISOString()}] [LOG] ${argv}\n`);
         if (webContentsLoaded) {
-            handleArgv(argv);
+            handleArgv(argv, true);
         } else {
-            onWebContentsLoadedCallbacks.push((): void => void handleArgv(argv));
+            onWebContentsLoadedCallbacks.push((): void => void handleArgv(argv, true));
         }
     });
 
