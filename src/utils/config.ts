@@ -108,7 +108,7 @@ namespace exports {
          * The default values for the config file.
          */
         public static readonly defaults = Object.freeze({
-            versionFolderSearchLocations: ["%appdata%/.minecraft_bedrock/versions", "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions"],
+            versionFolderSearchLocations: ["%appdata%/.minecraft_bedrock/versions", "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions", "%appdata%/../../../../XboxGames/Minecraft Preview for Windows"],
             attemptToKeepCurrentConfigWhenUpdatingVersion: false,
             bypassImportJSPluginPrompt: false,
             GUIScale: 0,

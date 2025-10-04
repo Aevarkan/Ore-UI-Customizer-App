@@ -213,7 +213,7 @@ export class InstallationManager {
             ] = AppxManifestXMLContent.match(/<mp:PhoneIdentity PhoneProductId="([a-f0-9-]+)" PhonePublisherId="([a-f0-9-]+)" \/>/)?.slice(1, 3) as [
                 AppxManifestPhoneProductId: string | undefined,
                 AppxManifestPhonePublisherId: string | undefined
-            ];
+            ] ?? [];
             if (!AppxManifestXMLVersion) {
             } else {
                 const AppxManifestXMLEdition: "Microsoft.MinecraftUWP" | "Microsoft.MinecraftWindowsBeta" | undefined = AppxManifestXMLContent.match(
