@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * JSONB.ts
  * An improved version of {@link JSON}

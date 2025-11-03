@@ -85,6 +85,18 @@ export default function InstallationsPage(): JSX.SpecificElement<"center"> {
                             });
                             break;
                         case "Partially Failed Installation":
+                            optionsList.push({
+                                label: "View Failures",
+                                async click(): Promise<void> {
+                                    dialog.showMessageBox({
+                                        type: "none",
+                                        title: "Failed Plugins",
+                                        message: JSON.stringify(versionFolder.getFailedPlugins(), null, 4),
+                                        buttons: ["Close"],
+                                        noLink: true,
+                                    });
+                                },
+                            });
                             if (versionFolder.getIsUpdateAvailable()) {
                                 optionsList.push({
                                     label: "Update",
@@ -105,7 +117,17 @@ export default function InstallationsPage(): JSX.SpecificElement<"center"> {
                                 {
                                     label: "Uninstall",
                                     async click(): Promise<void> {
-                                        versionFolder.uninstall(true);
+                                        try {
+                                            versionFolder.uninstall(true);
+                                        } catch (e: any) {
+                                            dialog.showMessageBox({
+                                                type: "error",
+                                                title: "Error",
+                                                message: e.message,
+                                                buttons: ["Close"],
+                                                noLink: true,
+                                            });
+                                        }
                                         reloadMainPageContents();
                                     },
                                 }

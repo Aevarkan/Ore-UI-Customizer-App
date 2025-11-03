@@ -33,7 +33,23 @@
         "no-var": "off",
         "no-empty": "off",
         "no-empty-function": "off",
-        "no-unused-vars": "off"
-    }
+        "no-unused-vars": "off",
+        "no-control-regex": "off"
+    },
+    "overrides": [
+        {
+            "files": [
+                "./src/main.ts",
+                "./src/preMain.ts",
+                "./src/api/main.ts",
+                "./src/init/JSONB.ts",
+                "./src/utils/config.ts",
+                "./src/utils/URLs.ts",
+                "./src/utils/version.ts"
+            ],
+            "env": {
+                "browser": false
+            }
+        }
+    ]
 }
-

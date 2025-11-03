@@ -210,10 +210,11 @@ export class InstallationManager {
             const [AppxManifestPhoneProductId, AppxManifestPhonePublisherId]: [
                 AppxManifestPhoneProductId: string | undefined,
                 AppxManifestPhonePublisherId: string | undefined
-            ] = AppxManifestXMLContent.match(/<mp:PhoneIdentity PhoneProductId="([a-f0-9-]+)" PhonePublisherId="([a-f0-9-]+)" \/>/)?.slice(1, 3) as [
-                AppxManifestPhoneProductId: string | undefined,
-                AppxManifestPhonePublisherId: string | undefined
-            ] ?? [];
+            ] =
+                (AppxManifestXMLContent.match(/<mp:PhoneIdentity PhoneProductId="([a-f0-9-]+)" PhonePublisherId="([a-f0-9-]+)" \/>/)?.slice(1, 3) as [
+                    AppxManifestPhoneProductId: string | undefined,
+                    AppxManifestPhonePublisherId: string | undefined
+                ]) ?? [];
             if (!AppxManifestXMLVersion) {
             } else {
                 const AppxManifestXMLEdition: "microsoft.minecraftuwp" | "microsoft.minecraftwindowsbeta" | undefined = AppxManifestXMLContent.match(
@@ -296,6 +297,8 @@ export class VersionFolder {
     }
     /**
      * The path to the GUI folder.
+     *
+     * @throws {ReferenceError} If the GUI folder could not be found.
      */
     public get guiFolderPath(): string {
         if (existsSync(path.join(this.path, "data/gui"))) {
@@ -304,7 +307,7 @@ export class VersionFolder {
         if (existsSync(path.join(this.path, "assets/assets/gui"))) {
             return path.join(this.path, "assets/assets/gui");
         }
-        throw new Error("Could not find gui folder.");
+        throw new ReferenceError("Could not find gui folder.");
     }
     /**
      * Gets the display version of the version folder.
@@ -395,6 +398,13 @@ export class VersionFolder {
         }
         return undefined;
     }
+    /**
+     * Gets the path to the backup folder zip.
+     *
+     * @returns The path to the backup folder zip, or `undefined` if it does not exist.
+     *
+     * @throws {ReferenceError} If the GUI folder could not be found.
+     */
     public getBackupFolderZipPath(): string | undefined {
         /**
          * The path to the current backup folder location.
@@ -405,6 +415,35 @@ export class VersionFolder {
         }
     }
     /**
+     * Gets the failed plugins data.
+     *
+     * @returns The failed plugins data, or `undefined` if the installation was not partially failed.
+     *
+     * @throws {ReferenceError} If the GUI folder could not be found.
+     */
+    public getFailedPlugins(): FailedPluginsJSON | undefined {
+        const guiFolderPath: string = this.guiFolderPath;
+        if (existsSync(path.join(guiFolderPath, "dist/hbui/failed_plugins.json"))) {
+            const data: FailedPluginsJSON = JSON.parse(readFileSync(path.join(guiFolderPath, "dist/hbui/failed_plugins.json"), "utf8"));
+            if (typeof data === "object" && Object.keys(data).length) return data;
+        }
+    }
+    /**
+     * Sets the failed plugins data.
+     *
+     * @param data The failed plugins data, or `undefined` to remove the file.
+     *
+     * @throws {ReferenceError} If the GUI folder could not be found.
+     */
+    public setFailedPlugins(data?: FailedPluginsJSON | undefined): void {
+        const guiFolderPath: string = this.guiFolderPath;
+        if (typeof data === "object" && data !== null) {
+            writeFileSync(path.join(guiFolderPath, "dist/hbui/failed_plugins.json"), JSON.stringify(data, null, 4), "utf8");
+        } else {
+            rmSync(path.join(guiFolderPath, "dist/hbui/failed_plugins.json"), { force: true });
+        }
+    }
+    /**
      * Installs the Ore UI Customizer on the version folder.
      *
      * @param showProgressBar Whether or not to show a progress bar, defaults to `true`.
@@ -412,6 +451,7 @@ export class VersionFolder {
      *
      * @throws {any} If the installation fails.
      * @throws {ReferenceError} If the data folder subpath of the version folder is not found.
+     * @throws {ReferenceError} If the GUI folder could not be found.
      */
     public async install(showProgressBar: boolean = true): Promise<void> {
         const dataFolderSubpath: ReturnType<(typeof InstallationManager)["getDataFolderSubpathOfVersionFolder"]> = this.getDataFolderSubpath();
@@ -423,7 +463,6 @@ export class VersionFolder {
                   indeterminate: true,
                   title: "Installing Ore UI Customizer",
                   text: "Preparing to install...",
-                  //   debug: true,
                   browserWindow: {
                       closable: false,
                       parent: getCurrentWindow(),
@@ -581,7 +620,7 @@ export class VersionFolder {
                 progressBar.text = "Applying modded zip...";
                 progressBar.detail = `Applying modded zip...`;
             }
-            const GUIFolderpath = this.guiFolderPath;
+            const GUIFolderpath: string = this.guiFolderPath;
             /**
              * Apply a modded zip to a version.
              *
@@ -624,6 +663,7 @@ export class VersionFolder {
             await applyModdedZip(moddedZipData.zip, this.path);
 
             if (Object.keys(moddedZipData.allFailedReplaces).length > 0) {
+                this.setFailedPlugins(moddedZipData.allFailedReplaces);
                 progressBar?.setProgressBarMode("error");
                 if (progressBar?._window) progressBar._window.closable = true;
                 await dialog.showMessageBox(getCurrentWindow(), {
@@ -637,6 +677,7 @@ export class VersionFolder {
                 });
                 console.warn("Some customizations failed.", moddedZipData.allFailedReplaces);
             } else {
+                this.setFailedPlugins();
                 progressBar?.close();
                 getCurrentWindow().flashFrame(true);
             }

@@ -108,7 +108,16 @@ namespace exports {
          * The default values for the config file.
          */
         public static readonly defaults = Object.freeze({
-            versionFolderSearchLocations: ["%appdata%/.minecraft_bedrock/versions", "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions", "%appdata%/../../../../XboxGames/Minecraft Preview for Windows", "%appdata%/../../../../XboxGames/Minecraft for Windows"],
+            versionFolderSearchLocations: [
+                // Bedrock Launcher (Windows)
+                "%appdata%/.minecraft_bedrock/versions",
+                // MCPELauncher (Linux/macOS)
+                "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions",
+                // GDK Preview (Windows)
+                "%appdata%/../../../../XboxGames/Minecraft Preview for Windows",
+                // GDK (Windows)
+                "%appdata%/../../../../XboxGames/Minecraft for Windows",
+            ],
             attemptToKeepCurrentConfigWhenUpdatingVersion: false,
             bypassImportJSPluginPrompt: false,
             GUIScale: 0,
@@ -233,7 +242,16 @@ namespace exports {
          *
          * @default
          * ```typescript
-         * ["%appdata%/.minecraft_bedrock/versions", "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions"]
+         * [
+         *     // Bedrock Launcher (Windows)
+         *     "%appdata%/.minecraft_bedrock/versions",
+         *     // MCPELauncher (Linux/macOS)
+         *     "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions",
+         *     // GDK Preview (Windows)
+         *     "%appdata%/../../../../XboxGames/Minecraft Preview for Windows",
+         *     // GDK (Windows)
+         *     "%appdata%/../../../../XboxGames/Minecraft for Windows",
+         * ]
          * ```
          */
         public get versionFolderSearchLocations(): string[] {
