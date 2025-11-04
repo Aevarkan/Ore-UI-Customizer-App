@@ -368,7 +368,7 @@ async function autoJoinRealm(realmName) {
  * Joins a server by name.
  *
  * @param {string} serverName The name of the server to join.
- * @returns {Promise<{success: boolean, message: string, stack?: string, error?: Error}>} The result.
+ * @returns {Promise<{success: boolean, message: string, error?: unknown}>} The result.
  *
  * @description
  * 1. Switches to the servers tab, it it is not already open.
@@ -379,11 +379,11 @@ async function autoJoinRealm(realmName) {
  */
 async function autoJoinServer(serverName) {
     try {
-        for (let i = 0; i < 100; i++) {
+        for (let i = 0; i < 101; i++) {
             if (document.querySelector("div[data-testid='play-screen-tab-bar-servers']") !== null) {
                 break;
             }
-            if (i >= 99) {
+            if (i >= 100) {
                 console.error(`Failed to join server: ${serverName}; Failed to find servers tab button. Timed out.`);
                 return {
                     success: false,
@@ -428,7 +428,7 @@ async function autoJoinServer(serverName) {
                 ?.parentElement?.parentElement?.parentElement?.parentElement ?? null;
         let addServerButtonContainer = addServerButton?.parentElement ?? null;
         let serversList = addServerButtonContainer?.parentElement ?? null;
-        for (let i = 0; i < 101; i++) {
+        for (let i = 0; i < 100; i++) {
             addServerButtonClass ??= document.body.innerHTML.match(/<div class="([a-zA-Z0-9]+)">Add server<\/div>/)?.[1] ?? null;
             addServerButton ??=
                 Array.from(document.querySelectorAll(`div.${addServerButtonClass}`).values()).find((div) => div.textContent === "Add server")?.parentElement
@@ -436,7 +436,7 @@ async function autoJoinServer(serverName) {
             addServerButtonContainer ??= addServerButton?.parentElement ?? null;
             serversList ??= addServerButtonContainer?.parentElement ?? null;
             if (!addServerButton || !serversList) {
-                if (i >= 100) {
+                if (i >= 99) {
                     console.error(
                         `Failed to join server: ${serverName}; Failed to find ${!addServerButton ? "add server button" : "servers list"}. Timed out.`
                     );
@@ -495,21 +495,18 @@ async function autoJoinServer(serverName) {
                     };
                 }
             }
-            if (i >= 99) {
-                console.error(`Failed to join server: ${serverName}; Failed to find server in server list. Timed out.`);
-                return {
-                    success: false,
-                    message: `Failed to join server: ${serverName}; Failed to find server in server list. Timed out.`,
-                };
-            }
             await new Promise((resolve) => setTimeout(resolve, 100));
         }
-    } catch (e) {
-        console.error(e.message, e.stack);
+        console.error(`Failed to join server: ${serverName}; Failed to find server in server list. Timed out.`);
         return {
             success: false,
-            message: e.message,
-            stack: e.stack,
+            message: `Failed to join server: ${serverName}; Failed to find server in server list. Timed out.`,
+        };
+    } catch (e) {
+        console.error(e);
+        return {
+            success: false,
+            message: e instanceof Error ? e.message : String(e),
             error: e,
         };
     }
@@ -519,7 +516,7 @@ async function autoJoinServer(serverName) {
  * Joins a world by name.
  *
  * @param {string} worldName The name of the world to join.
- * @returns {{success: boolean, message: string, stack?: string, error?: Error}} The result.
+ * @returns {Promise<{success: boolean, message: string, error?: any}>} The result.
  *
  * @description
  * 1. Switches to the worlds tab, it it is not already open.
@@ -582,11 +579,10 @@ async function autoJoinWorld(worldName) {
             await new Promise((resolve) => setTimeout(resolve, 100));
         }
     } catch (e) {
-        console.error(e.message, e.stack);
+        console.error(e);
         return {
             success: false,
-            message: e.message,
-            stack: e.stack,
+            message: e instanceof Error ? e.message : String(e),
             error: e,
         };
     }
@@ -1654,7 +1650,7 @@ var consoleExpansionArrowID = 0n;
 /**
  * Creates a view for an expandable object for use in the console.
  *
- * @param {Object} obj The object to create a view for.
+ * @param {Record<PropertyKey, any>} obj The object to create a view for.
  * @param {boolean} [isRoot=false] Whether the object is the root object. Defaults to `false`.
  * @param {boolean} [forceObjectMode=false] Whether to force the value into object mode. Defaults to `false`.
  * @param {{summaryValueOverride?: string, summaryValueOverride_toStringTag?: string, displayKey?: string}} [options] The options for creating the view.
@@ -1733,6 +1729,7 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
         "position: absolute; top: -100%; left: 0px; display: none; background-color: #FFFFFFAA; color: #000000FF; pointer-events: none;";
     evaluatedUponFirstExpandingInfoText.textContent = "This value was evaluated upon first expanding. It may have changed since then.";
     evaluatedUponFirstExpandingInfo.appendChild(evaluatedUponFirstExpandingInfoText);
+    //@ts-ignore
     summary.lastChild.appendChild(evaluatedUponFirstExpandingInfo);
     summary.style.cursor = "pointer";
     summary.style.display = "block";
@@ -1744,9 +1741,10 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
     summary.addEventListener("click", () => {
         if (container.childNodes.length === 1) {
             try {
+                //@ts-ignore
                 document.getElementById(`consoleExpansionArrow-${arrowID}`).style.transform = "rotateZ(90deg)";
             } catch (e) {
-                console.error(e.toString(), e.stack);
+                console.error(e);
             }
             summary.getElementsByClassName("evaluatedUponFirstExpandingInfo")[0].style.display = "inline";
             const details = document.createElement("div");
@@ -1777,7 +1775,15 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
             ];
             if (obj.__proto__) keys.push({ displayName: "[[Prototype]]", key: "__proto__" });
             for (const keyRaw of keys) {
+                /**
+                 * @type {PropertyKey}
+                 */
+                //@ts-ignore
                 const key = ["number", "string", "symbol"].includes(typeof keyRaw) ? keyRaw : keyRaw.key;
+                /**
+                 * @type {string}
+                 */
+                //@ts-ignore
                 const displayName = ["number", "string", "symbol"].includes(typeof keyRaw) ? keyRaw.toString() : keyRaw.displayName;
                 const item = document.createElement("div");
                 item.style.marginLeft = "44px";
@@ -1830,15 +1836,18 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
                             "position: absolute; top: -100%; left: 0px; display: none; background-color: #FFFFFFAA; color: #000000FF; pointer-events: none;";
                         evaluatedUponFirstExpandingInfoText.textContent = "This value was evaluated upon first expanding. It may have changed since then.";
                         evaluatedUponFirstExpandingInfo.appendChild(evaluatedUponFirstExpandingInfoText);
+                        //@ts-ignore
                         funcSummary.lastChild.appendChild(evaluatedUponFirstExpandingInfo);
                         item.appendChild(funcSummary);
 
                         funcSummary.addEventListener("click", () => {
                             if (funcSummary.nextSibling) {
+                                //@ts-ignore
                                 document.getElementById(`consoleExpansionArrow-${arrowID}`).style.transform = "rotateZ(0deg)";
                                 funcSummary.getElementsByClassName("evaluatedUponFirstExpandingInfo")[0].style.display = "none";
                                 funcSummary.nextSibling.remove();
                             } else {
+                                //@ts-ignore
                                 document.getElementById(`consoleExpansionArrow-${arrowID}`).style.transform = "rotateZ(90deg)";
                                 funcSummary.getElementsByClassName("evaluatedUponFirstExpandingInfo")[0].style.display = "inline";
                                 const funcDetails = document.createElement("div");
@@ -1897,7 +1906,7 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
                                         symbolDetails.style.marginLeft = "44px";
                                         funcDetails.appendChild(symbolDetails);
                                     } catch (e) {
-                                        console.error(e, e.stack);
+                                        console.error(e);
                                     }
                                 });
 
@@ -1908,7 +1917,7 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
                                         prototypeExpandableObjectView.style.marginLeft = "44px";
                                         funcDetails.appendChild(prototypeExpandableObjectView);
                                     } catch (e) {
-                                        console.error(e, e.stack);
+                                        console.error(e);
                                     }
                                 } else {
                                     console.warn(`No prototype found for ${displayName}`);
@@ -1948,8 +1957,10 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
                     }
                     details.appendChild(item);
                 } catch (e) {
+                    //@ts-ignore
                     const exceptionExpandableObjectView = createExpandableObjectView(e, false, false, {
                         summaryValueOverride: `(Exception)`,
+                        //@ts-ignore
                         summaryValueOverride_toStringTag: e?.name ?? e?.[Symbol.toStringTag],
                         displayKey: displayName,
                     });
@@ -1960,10 +1971,12 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
             container.appendChild(details);
         } else {
             try {
+                //@ts-ignore
                 document.getElementById(`consoleExpansionArrow-${arrowID}`).style.transform = "rotateZ(0deg)";
             } catch (e) {
-                console.error(e, e.stack);
+                console.error(e);
             }
+            //@ts-ignore
             summary.getElementsByClassName("evaluatedUponFirstExpandingInfo")[0].style.display = "none";
             container.removeChild(container.childNodes[1]);
         }
@@ -1973,51 +1986,57 @@ function createExpandableObjectView(obj, isRoot = false, forceObjectMode = false
 }
 
 // This is not good enough yet.
-/* copyTextToClipboard(
-    JSONB.stringify(getAccessibleFacetSpyFacets(), (k, v) => {
-        if (typeof v === "object") {
-            return v === null
-                ? null
-                : "slice" in v && !(v instanceof Array)
-                ? { $PartialArrayType: Array.from(v) }
-                : v instanceof Array
-                ? v
-                : Object.fromEntries(
-                      [
-                          ...new Set([
-                              ...Object.keys(v),
-                              ...(() => {
-                                  try {
-                                      return Object.getOwnPropertyNames(v.__proto__).filter((key) => {
-                                          try {
-                                              // Make sure the property won't throw an error when accessed.
-                                              v[key];
-                                              return key in v;
-                                          } catch {
-                                              return false;
-                                          }
-                                      });
-                                  } catch (e) {
-                                      return [];
-                                  }
-                              })(),
-                              ...Object.getOwnPropertyNames(v),
-                              ...Object.getOwnPropertySymbols(v),
-                          ]),
-                      ].map((key) => {
-                          try {
-                              return [key, v[key]];
-                          } catch (e) {
-                              return { ERROR: e };
-                          }
-                      })
-                  );
-        }
-        if (typeof v === "function") {
-            return v.toString();
-        }
-        return typeof v;
-    })
+/* 
+const facetList = [...new Set([...Object.keys(accessedFacets), ...Object.keys(facetSpyData.sharedFacets)])];
+
+Promise.all(facetList.map((v) => forceLoadFacet(v).catch(() => {}))).then(() =>
+    copyTextToClipboardAsync(
+        JSONB.stringify({ ...Object.fromEntries(facetList.map((v) => [v, Symbol.for("__MISSING__")])), ...getAccessibleFacetSpyFacets() }, (k, v) => {
+            if (typeof v === "object") {
+                return v === null
+                    ? null
+                    : v.constructor?.name === "CoherentArrayProxy"
+                    ? { $PartialArrayType: Array.from(v) }
+                    : v instanceof Array
+                    ? v
+                    : Object.fromEntries(
+                          [
+                              ...new Set([
+                                  ...Object.keys(v),
+                                  ...(() => {
+                                      try {
+                                          return Object.getOwnPropertyNames(v.__proto__).filter((key) => {
+                                              try {
+                                                  // Make sure the property won't throw an error when accessed.
+                                                  v[key];
+                                                  return key in v;
+                                              } catch {
+                                                  return false;
+                                              }
+                                          });
+                                      } catch (e) {
+                                          return [];
+                                      }
+                                  })(),
+                                  ...Object.getOwnPropertyNames(v),
+                                  ...Object.getOwnPropertySymbols(v),
+                              ]),
+                          ].map((key) => {
+                              try {
+                                  return [key, v[key]];
+                              } catch (e) {
+                                  return { ERROR: e };
+                              }
+                          })
+                      );
+            }
+            if (typeof v === "function") {
+                return v.toString();
+            }
+            if (v === Symbol.for("__MISSING__")) return "__MISSING__";
+            return typeof v;
+        })
+    )
 ); */
 
 /**
@@ -4641,11 +4660,11 @@ async function copyTextToClipboardAsync(text, timeout = 100, allowErrorLogging =
                 }
             } catch (e) {
                 // If the copy operation failed, store the error in the localStorage so it can be accessed in the context and route that triggered the copy operation.
-                localStorage.setItem("clipboardCopyError", e + e.stack);
+                localStorage.setItem("clipboardCopyError", e instanceof Error ? e.stack ?? String(e) : String(e));
                 // If the copy operation failed, store the error in a global variable for debugging purposes.
                 globalThis.__DEBUG_copyTextToClipboard_old_GLOBALS_copyError__ = e;
                 // Log the error to the console.
-                console.error("Failed to copy text to clipboard:", e, e.stack);
+                console.error("Failed to copy text to clipboard:", e);
             }
             // If the copy operation failed, remove the text to copy from the localStorage so it doesn't interfere with future copy operations.
             localStorage.removeItem("textToCopy");
@@ -4653,6 +4672,7 @@ async function copyTextToClipboardAsync(text, timeout = 100, allowErrorLogging =
             localStorage.setItem("clipboardCopyStatus", "failed");
 
             // Close the add friend page and return to the previous page and context.
+            //@ts-ignore
             getAccessibleFacetSpyFacets()["core.router"].history.goBack();
             return false;
         })();
