@@ -10,3 +10,4 @@ export * from "./utils/ore-ui-customizer-assets.ts";
 export * from "./utils/pageList.ts";
 export * from "./utils/URLs.ts";
  */
+export * from "./utils/OreUIPreviewManager.ts";

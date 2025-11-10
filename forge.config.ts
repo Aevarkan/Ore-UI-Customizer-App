@@ -7,6 +7,8 @@ import { VitePlugin } from "@electron-forge/plugin-vite";
 import { FusesPlugin } from "@electron-forge/plugin-fuses";
 import { FuseV1Options, FuseVersion } from "@electron/fuses";
 import { type ChildProcess, spawn } from "node:child_process";
+import { existsSync, readdirSync, rmSync } from "node:fs";
+import path from "node:path";
 
 const config: ForgeConfig = {
     packagerConfig: {
@@ -97,7 +99,20 @@ const config: ForgeConfig = {
         }),
     ],
     hooks: {
-        packageAfterPrune: async (config: ResolvedForgeConfig, build_path: string): Promise<void> => {
+        async postPackage(_config, packageResult) {
+            packageResult.outputPaths.forEach((build_path: string): void => {
+                if (existsSync(path.join(build_path, "resources/resources/ore-ui-viewer/src/assets/cubemap"))) {
+                    console.log("[Ore UI Viewer pruner]: Deleting cubemap folder:", path.join(build_path, "resources/resources/ore-ui-viewer/src/assets/cubemap"));
+                    rmSync(path.join(build_path, "resources/resources/ore-ui-viewer/src/assets/cubemap"), { recursive: true, force: true });
+                } else {
+                    console.warn(
+                        "[Ore UI Viewer pruner]: No cubemap folder found at:",
+                        path.join(build_path, "resources/resources/ore-ui-viewer/src/assets/cubemap")
+                    );
+                }
+            });
+        },
+        async packageAfterPrune(_config: ResolvedForgeConfig, build_path: string): Promise<void> {
             const vite_config = await import("./vite.main.config.ts");
             const external: Exclude<NonNullable<NonNullable<ReturnType<typeof vite_config.default>["build"]>["rollupOptions"]>["external"], undefined> | [] =
                 vite_config?.default({ command: "build", mode: "production" } as any)?.build?.rollupOptions?.external || [];

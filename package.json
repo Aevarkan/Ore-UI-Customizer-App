@@ -1,7 +1,7 @@
 {
     "name": "ore-ui-customizer-app",
     "productName": "ore-ui-customizer-app",
-    "version": "1.0.0-beta.16",
+    "version": "1.0.0-beta.17",
     "description": "The app version of 8Crafter's Ore UI Customizer.",
     "main": ".vite/build/main.js",
     "type": "commonjs",
@@ -37,6 +37,7 @@
         "@electron/fuses": "^1.8.0",
         "@types/debug": "^4.1.12",
         "@types/electron-squirrel-startup": "^1.0.2",
+        "@types/express": "^5.0.5",
         "@types/extend": "^3.0.4",
         "@types/jquery": "^3.5.32",
         "@types/q": "^1.5.8",
@@ -61,6 +62,7 @@
         "electron-progressbar": "^2.2.1",
         "electron-regedit-fixed": "^3.2.0",
         "electron-squirrel-startup": "^1.0.1",
+        "express": "^5.1.0",
         "jquery": "^3.7.1",
         "jquery-ui": "^1.14.1",
         "json5": "^2.2.3",
@@ -69,6 +71,7 @@
         "overlayscrollbars-react": "^0.5.6",
         "preact": "^10.26.9",
         "semver": "^7.7.2",
-        "update-electron-app": "^3.1.1"
+        "update-electron-app": "^3.1.1",
+        "v8-compile-cache": "^2.4.0"
     }
 }

@@ -693,6 +693,11 @@ function createWindow(): void {
 }
 
 if (!startup && !started) {
+    if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+        process.env.resourcesPath = path.join(__dirname, "../../", "resources/");
+    } else {
+        process.env.resourcesPath = path.join(__dirname, "../../../", "resources/");
+    }
     ipcMain.on("create-window", (event: IpcMainEvent): void => {
         createWindow();
         event.returnValue = void true;

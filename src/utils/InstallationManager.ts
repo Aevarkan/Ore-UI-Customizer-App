@@ -15,6 +15,7 @@ import { applyMods, format_version } from "./ore-ui-customizer-api.ts";
 import { addFolderContentsReversed } from "./folderContentsUtils.ts";
 import { OreUICustomizerPlugin, PluginManager, type MissingPluginInfo } from "./PluginManager.ts";
 import type { MessageBoxReturnValue } from "electron";
+import { createHash, getHashes, hash } from "node:crypto";
 const { dialog } = require("@electron/remote") as typeof import("@electron/remote");
 
 /**
@@ -290,6 +291,19 @@ export class VersionFolder {
         ({ version: this.version, channel: this.channel, dev: this.dev } = InstallationManager.getVersionFromVersionFolder(path)!);
     }
     /**
+     * The ID release channel of the version folder.
+     */
+    public get channelID(): 0 | 1 | 2 | 3 {
+        return (
+            {
+                Unknown: 0,
+                Release: 1,
+                Preview: 2,
+                Beta: 3,
+            } as const
+        )[this.channel];
+    }
+    /**
      * The installation status of the version folder.
      */
     public get installationStatus(): InstallationStatus {
@@ -366,8 +380,71 @@ export class VersionFolder {
      * @returns The path to the backup folder, or `undefined` if it does not exist.
      */
     public getBackupFolderPath(): string | undefined {
+        const hashes = getHashes().map((v) => v.toLowerCase());
+        if (hashes.includes("md4")) {
+            /**
+             * The path to the current md4 hashed backup folder location.
+             */
+            const backupFolderPath: string = path.join(
+                APP_DATA_FOLDER_PATH,
+                "backups",
+                hash(
+                    "md4",
+                    (path.posix.resolve(this.path).replaceAll("\\", "/") + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev).toLowerCase()
+                ),
+                "data",
+                "gui_vanilla_backup"
+            );
+            if (existsSync(backupFolderPath)) {
+                return backupFolderPath;
+            }
+        }
+        if (hashes.includes("md5")) {
+            /**
+             * The path to the current md5 hashed backup folder location.
+             */
+            const backupFolderPath: string = path.join(
+                APP_DATA_FOLDER_PATH,
+                "backups",
+                hash(
+                    "md5",
+                    (path.posix.resolve(this.path).replaceAll("\\", "/") + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev).toLowerCase()
+                ),
+                "data",
+                "gui_vanilla_backup"
+            );
+            if (existsSync(backupFolderPath)) {
+                return backupFolderPath;
+            }
+        }
         /**
-         * The path to the current backup folder location.
+         * The path to the current versioned backup folder location.
+         */
+        const backupFolderPath_versioned: string = path.join(
+            APP_DATA_FOLDER_PATH,
+            "backups",
+            path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+            "data",
+            "gui_vanilla_backup"
+        );
+        if (existsSync(backupFolderPath_versioned)) {
+            return backupFolderPath_versioned;
+        }
+        /**
+         * The path to the current version-only backup folder location.
+         */
+        const backupFolderPath_version_only: string = path.join(
+            APP_DATA_FOLDER_PATH,
+            "backups",
+            "__VERSION_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+            "data",
+            "gui_vanilla_backup"
+        );
+        if (existsSync(backupFolderPath_version_only)) {
+            return backupFolderPath_version_only;
+        }
+        /**
+         * The path to the current non-versioned backup folder location.
          */
         const backupFolderPath: string = path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup");
         if (existsSync(backupFolderPath)) {
@@ -406,12 +483,57 @@ export class VersionFolder {
      * @throws {ReferenceError} If the GUI folder could not be found.
      */
     public getBackupFolderZipPath(): string | undefined {
+        // TODO: Add hash-based backup paths.
+        // const hashes = getHashes().map((v) => v.toLowerCase());
+        // if (hashes.includes("md4")) {
+        //     /**
+        //      * The path to the current md4 hashed backup folder location.
+        //      */
+        //     var backupFolderPath: string = path.join(
+        //         APP_DATA_FOLDER_PATH,
+        //         "backups",
+        //         hash("md4", (path.posix.resolve(this.path).replaceAll("\\", "/") + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev).toLowerCase()),
+        //         "data",
+        //         "gui_vanilla_backup"
+        //     );
+        //     if (existsSync(backupFolderPath)) {
+        //         return backupFolderPath;
+        //     }
+        // }
+        // if (hashes.includes("md5")) {
+        //     /**
+        //      * The path to the current md5 hashed backup folder location.
+        //      */
+        //     var backupFolderPath: string = path.join(
+        //         APP_DATA_FOLDER_PATH,
+        //         "backups",
+        //         hash("md5", (path.posix.resolve(this.path).replaceAll("\\", "/") + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev).toLowerCase()),
+        //         "data",
+        //         "gui_vanilla_backup"
+        //     );
+        //     if (existsSync(backupFolderPath)) {
+        //         return backupFolderPath;
+        //     }
+        // }
         /**
          * The path to the current backup folder location.
          */
-        const backupFolderZipPath: string = path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup.zip");
+        const backupFolderZipPath: string = path.join(
+            APP_DATA_FOLDER_PATH,
+            "backups",
+            path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+            "data",
+            "gui_vanilla_backup.zip"
+        );
         if (existsSync(backupFolderZipPath)) {
             return backupFolderZipPath;
+        }
+        /**
+         * The path to the old backup folder location.
+         */
+        const oldBackupFolderZipPath: string = path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup.zip");
+        if (existsSync(oldBackupFolderZipPath)) {
+            return oldBackupFolderZipPath;
         }
     }
     /**
@@ -481,11 +603,37 @@ export class VersionFolder {
              * The path to the current backup folder location.
              */
             const currentBackupFolderPath: string | undefined = this.getBackupFolderPath();
-            if (!existsSync(path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup"))) {
-                mkdirSync(path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup"), { recursive: true });
+            if (
+                !existsSync(
+                    path.join(
+                        APP_DATA_FOLDER_PATH,
+                        "backups",
+                        path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                        "data",
+                        "gui_vanilla_backup"
+                    )
+                )
+            ) {
+                mkdirSync(
+                    path.join(
+                        APP_DATA_FOLDER_PATH,
+                        "backups",
+                        path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                        "data",
+                        "gui_vanilla_backup"
+                    ),
+                    {
+                        recursive: true,
+                    }
+                );
             }
             writeFileSync(
-                path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "lastOreUICustomizerVersionUsed.json"),
+                path.join(
+                    APP_DATA_FOLDER_PATH,
+                    "backups",
+                    path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                    "lastOreUICustomizerVersionUsed.json"
+                ),
                 JSON.stringify(
                     {
                         customizerVersion: format_version,
@@ -495,6 +643,15 @@ export class VersionFolder {
                     4
                 )
             );
+            writeFileSync(
+                path.join(
+                    APP_DATA_FOLDER_PATH,
+                    "backups",
+                    path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                    "associatedMCVersion.json"
+                ),
+                JSON.stringify([...this.version, this.channel, this.dev], null, 4)
+            );
             /**
              * The zip file system.
              */
@@ -502,16 +659,36 @@ export class VersionFolder {
             /**
              * The path to the vanilla gui backup folder for the provided version folder.
              */
-            const vanillaBackupPath: string = path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup");
-            const vanillaBackupFolderZipPath: string | undefined = this.getBackupFolderZipPath();
+            const vanillaBackupPath: string = path.join(
+                APP_DATA_FOLDER_PATH,
+                "backups",
+                path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                "data",
+                "gui_vanilla_backup"
+            );
+            let vanillaBackupFolderZipPath: string | undefined = this.getBackupFolderZipPath();
+            if (
+                vanillaBackupFolderZipPath !==
+                path.join(
+                    APP_DATA_FOLDER_PATH,
+                    "backups",
+                    path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                    "data",
+                    "gui_vanilla_backup.zip"
+                )
+            ) {
+                // Disable keeping the old one as it will cause issues when migrating to the new version and having old folders for paths that are constant across versions.
+                vanillaBackupFolderZipPath = undefined;
+            }
             if (currentBackupFolderPath !== vanillaBackupPath) {
-                if (currentBackupFolderPath) {
-                    if (progressBar) progressBar.detail = "Copying existing GUI backup folder to the new location...";
-                    copyFolder(currentBackupFolderPath, vanillaBackupPath);
-                } else {
-                    if (progressBar) progressBar.detail = "Creating backup of the vanilla GUI folder...";
-                    copyFolder(this.guiFolderPath, vanillaBackupPath);
-                }
+                // Disable keeping the old one as it will cause issues when migrating to the new version and having old folders for paths that are constant across versions.
+                // if (currentBackupFolderPath) {
+                //     if (progressBar) progressBar.detail = "Copying existing GUI backup folder to the new location...";
+                //     copyFolder(currentBackupFolderPath, vanillaBackupPath);
+                // } else {
+                if (progressBar) progressBar.detail = "Creating backup of the vanilla GUI folder...";
+                copyFolder(this.guiFolderPath, vanillaBackupPath);
+                // }
             }
 
             const vanillaGUIFolderItemCount: number = readdirSync(vanillaBackupPath, { withFileTypes: true, recursive: true }).filter(
@@ -597,7 +774,13 @@ export class VersionFolder {
 
             if (!vanillaBackupFolderZipPath) {
                 writeFileSync(
-                    path.join(APP_DATA_FOLDER_PATH, "backups", path.basename(this.path), "data", "gui_vanilla_backup.zip"),
+                    path.join(
+                        APP_DATA_FOLDER_PATH,
+                        "backups",
+                        path.basename(this.path) + "_" + this.version.join(".") + "." + this.channelID + "." + +this.dev,
+                        "data",
+                        "gui_vanilla_backup.zip"
+                    ),
                     Buffer.from(await originalZipData.arrayBuffer())
                 );
             }

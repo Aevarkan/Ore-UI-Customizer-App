@@ -77,5 +77,6 @@ declare namespace NodeJS {
         VBOX_MSI_INSTALL_PATH?: string;
         windir?: string;
         __PSLockDownPolicy?: `${number}`;
+        resourcesPath?: string;
     }
 }

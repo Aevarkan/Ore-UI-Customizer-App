@@ -1486,6 +1486,15 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
         zipFs.addBlob("gui/dist/hbui/assets/8crafter.gif", await fetchFileBlob("./assets/oreui/assets/8crafter.gif"));
         log("Added gui/dist/hbui/assets/8crafter.gif");
         addedCount++;
+        zipFs.addBlob("gui/dist/hbui/assets/Information_icon.png", await fetchFileBlob("./assets/oreui/assets/Information_icon.png"));
+        log("Added gui/dist/hbui/assets/Information_icon.png");
+        addedCount++;
+        zipFs.addBlob("gui/dist/hbui/assets/Readonly_icon.png", await fetchFileBlob("./assets/oreui/assets/Readonly_icon.png"));
+        log("Added gui/dist/hbui/assets/Readonly_icon.png");
+        addedCount++;
+        zipFs.addBlob("gui/dist/hbui/assets/Nonconfigurable_icon.png", await fetchFileBlob("./assets/oreui/assets/Nonconfigurable_icon.png"));
+        log("Added gui/dist/hbui/assets/Nonconfigurable_icon.png");
+        addedCount++;
         // Toggle
         zipFs.addBlob("gui/dist/hbui/assets/toggle_off_hover.png", await fetchFileBlob("./assets/oreui/assets/toggle_off_hover.png"));
         log("Added gui/dist/hbui/assets/toggle_off_hover.png");
@@ -1578,6 +1587,9 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
             await fetchFileBlob("./assets/oreui/assets/button_borderless_light_blue_pressed.png")
         );
         log("Added gui/dist/hbui/assets/button_borderless_light_blue_pressed.png");
+        addedCount++;
+        zipFs.addBlob("gui/dist/hbui/assets/disabledButton.png", await fetchFileBlob("./assets/oreui/assets/disabledButton.png"));
+        log("Added gui/dist/hbui/assets/disabledButton.png");
         addedCount++;
     } catch (e) {
         console.error(e);

@@ -858,7 +858,7 @@ declare global {
             editorModeOnly: "vanilla.editorInputState", // Crashes the game when not in editor mode.
             editorModeOnly: "vanilla.editorProjectConstants", // Crashes the game when not in editor mode.
             editorModeOnly: "vanilla.editorStructure", // Crashes the game when not in editor mode.
-            editorModeOnly: "vanilla.editorTutorial", // Crashes the game when not in editor mode.
+            editorModeOnly: "vanilla.editorTutorial" // Crashes the game when not in editor mode.
         ];
         /**
          * An interface that maps facets to their types.
@@ -977,6 +977,14 @@ declare global {
                      * The history stack.
                      */
                     list: CoherentArrayProxy<RouteHistoryItem>;
+                    /**
+                     * The length of the history stack.
+                     */
+                    length?: number;
+                    /**
+                     * The last action performed on the history stack.
+                     */
+                    action?: LooseAutocomplete<"REPLACE" | "PUSH" | "POP">;
                 };
             };
             "core.safeZone": {
@@ -1444,7 +1452,7 @@ declare global {
                     ping: string;
                     description: string;
                     name: string;
-                    id: string;
+                    id: `${number}`;
                 }>;
                 /**
                  * @todo Figure out the types for this method.
@@ -1810,11 +1818,11 @@ declare global {
                 /**
                  * Loads the details of a network world.
                  *
-                 * @param {`${number}`} id The ID of the server.
+                 * @param {`${number | bigint}`} id The ID of the server.
                  * @param {0 | 1 | 2 | 3} type `0` = Featured Server, `1` = External Server, `2` = Realm, `3` = LAN Server
                  * @returns {undefined | null} `undefined` if the parameters are invalid, `null` otherwise.
                  */
-                loadNetworkWorldDetails(id: `${number}`, type: 0 | 1 | 2 | 3): undefined | null;
+                loadNetworkWorldDetails(id: `${number | bigint}`, type: 0 | 1 | 2 | 3): undefined | null;
             };
             "vanilla.networkWorldJoiner": {
                 joinLANServerTaskState: number; // TODO: MAKE ENUM
@@ -2807,7 +2815,7 @@ declare global {
                     ping: string;
                     description: string;
                     name: string;
-                    id: string;
+                    id: `${bigint}`;
                 }>;
             };
             "vanilla.unpairedRealmsListFacet": {
