@@ -28,6 +28,8 @@ import { APP_DATA_FOLDER_PATH, CONFIG_FOLDER_PATH, PLUGIN_FOLDER_PATH, THEME_FOL
 import { updateElectronApp } from "update-electron-app";
 import CommentJSON from "comment-json";
 import type { OreUICustomizerConfig as OreUICustomizerConfig_Type } from "./utils/ore-ui-customizer-assets.ts";
+import { Octokit } from "@octokit/rest";
+import semver from "semver";
 // import { setupTitlebar, attachTitlebarToWindow } from "custom-electron-titlebar/main";
 const openAboutWindow_function = require("about-window").default as typeof import("about-window").default;
 function openAboutWindow(parentWindow?: BrowserWindow): BrowserWindow {
@@ -995,7 +997,11 @@ if (!startup && !started) {
     });
     function handleArgv(originalArgv: string[], secondInstance: boolean = false): void {
         const argv: string[] = originalArgv.slice(1 + +(originalArgv[1] === "--process-start-args"));
-        if (argv.filter((arg: string): boolean => arg !== "--allow-file-access-from-files").length === 0) {
+        const nonAllowFileAccessFromFilesParams: string[] = argv.filter((arg: string): boolean => arg !== "--allow-file-access-from-files");
+        if (
+            nonAllowFileAccessFromFilesParams.length === 0 ||
+            (nonAllowFileAccessFromFilesParams.length === 1 && nonAllowFileAccessFromFilesParams[0] === "--new-window")
+        ) {
             // (lastFocusedMainWindows.at(-1) ?? app)?.focus();
             if (secondInstance) createWindow();
             return;
@@ -1028,6 +1034,67 @@ if (!startup && !started) {
             app.quit();
         }
     });
+
+    if (!isSecondInstance) {
+        if (!isDev) {
+            if (process.platform === "win32") {
+                app.setUserTasks([
+                    {
+                        program: process.execPath,
+                        arguments: "--new-window",
+                        iconPath: process.execPath,
+                        iconIndex: 0,
+                        title: "New Window",
+                        description: "Create a new window",
+                    },
+                ]);
+            }
+        }
+        new Octokit().repos.listReleases({ owner: "8Crafter-Studios", repo: "Ore-UI-Customizer-App" }).then(
+            (releases): void => {
+                const latestRelease: (typeof releases.data)[number] | null = releases.data
+                    .filter(
+                        (release: (typeof releases.data)[number]): boolean =>
+                            !!semver.valid(release.tag_name) &&
+                            // TO-DO: Add an option to allow showing draft releases.
+                            !release.draft /* && config.notifyForPrereleaseUpdates ? true : !release.prerelease */
+                    )
+                    .reduce(
+                        (a: (typeof releases.data)[number] | null, b: (typeof releases.data)[number]): (typeof releases.data)[number] | null =>
+                            a ? (semver.compareBuild(a.tag_name, b.tag_name) < 0 ? b : a) : b ?? null,
+                        null
+                    );
+                if (!latestRelease) return;
+                if (semver.compareBuild(app.getVersion(), latestRelease.tag_name) < 0) {
+                    dialog
+                        .showMessageBox({
+                            type: "info",
+                            title: "Update Available",
+                            message: `A new version of 8Crafter's Ore UI Customizer is available.\n\nCurrent Version: ${app.getVersion()}\nLatest Version: ${
+                                latestRelease.tag_name
+                            }`,
+                            detail: latestRelease.body
+                                ? `Release Notes:\n${
+                                      latestRelease.body.split("\n").length > 15
+                                          ? [...latestRelease.body.split("\n").slice(0, 15), "..."].join("\n")
+                                          : latestRelease.body
+                                  }`
+                                : undefined,
+                            buttons: ["Open", "Cancel"],
+                            noLink: true,
+                            cancelId: 1,
+                            defaultId: 0,
+                        })
+                        .then((result: Electron.MessageBoxReturnValue): void => {
+                            if (result.response === 0) {
+                                shell.openExternal(latestRelease.html_url);
+                            }
+                        });
+                }
+            },
+            (): void => {}
+        );
+    }
 
     // In this file you can include the rest of your app's specific main process
     // code. You can also put them in separate files and import them here.

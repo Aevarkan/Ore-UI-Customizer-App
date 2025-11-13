@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 export class OreUIPreviewManager {
@@ -6,6 +7,12 @@ export class OreUIPreviewManager {
         const preview: OreUIPreview = new OreUIPreview(...args);
         this.activePreviews.push(preview);
         return preview;
+    }
+}
+
+declare global {
+    interface Window {
+        logOreUIPreviewLoadedResourceLocations?: boolean | undefined;
     }
 }
 
@@ -50,6 +57,7 @@ export class OreUIPreview {
         public readonly paths: {
             readonly guiDistPath: string;
             readonly textsPath?: string | undefined;
+            readonly vanillaResourcePacksContainerFolderPath?: string | undefined;
         },
         previewOptions: OreUIPreview["previewOptions"] = {}
     ) {
@@ -66,6 +74,61 @@ export class OreUIPreview {
         const server = express();
         server.use(express.static(path.join(process.env.resourcesPath ?? process.resourcesPath, "ore-ui-viewer")));
         server.use(express.static(paths.guiDistPath));
+        if (paths.vanillaResourcePacksContainerFolderPath) {
+            server.get(/rp\/.+/, (req, res) => {
+                const folders = readdirSync(paths.vanillaResourcePacksContainerFolderPath!, { withFileTypes: true })
+                    .filter((dirent) => dirent.isDirectory())
+                    .toSorted((a, b) =>
+                        a.name.startsWith("vanilla") && !b.name.startsWith("vanilla")
+                            ? 1
+                            : b.name.startsWith("vanilla") && !a.name.startsWith("vanilla")
+                            ? -1
+                            : a.name.startsWith("vanilla") && b.name.startsWith("vanilla")
+                            ? a.name === "vanilla"
+                                ? 1
+                                : b.name === "vanilla"
+                                ? -1
+                                : -a.name.localeCompare(b.name)
+                            : a.name.localeCompare(b.name)
+                    );
+                for (const folder of folders) {
+                    if (!existsSync(path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "")))) continue;
+                    res.sendFile(path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "")));
+                    if (window.logOreUIPreviewLoadedResourceLocations)
+                        console.debug(folder.name, path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "")));
+                    return;
+                }
+                for (const folder of folders) {
+                    for (const extension of [
+                        ".tga",
+                        ".svg",
+                        ".gif",
+                        ".apng",
+                        ".png",
+                        ".jpg",
+                        ".jpeg",
+                        ".jfif",
+                        ".pjpeg",
+                        ".pjp",
+                        ".webp",
+                        ".avif",
+                        ".bmp",
+                        ".ico",
+                        ".cur",
+                        ".tif",
+                        ".tiff",
+                    ]) {
+                        if (!existsSync(path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "") + extension)))
+                            continue;
+                        res.sendFile(path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "") + extension));
+                        if (window.logOreUIPreviewLoadedResourceLocations)
+                            console.debug(folder.name, path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "")));
+                        return;
+                    }
+                }
+                res.sendStatus(404);
+            });
+        }
 
         const debug = true;
         // console.log("\x1B[0m" + new Date().toLocaleTimeString() + " \x1B[33m\x1B[1m[INFO] \x1B[0m- Starting.");
@@ -122,6 +185,7 @@ export class OreUIPreview {
                         `--config-data=${JSON.stringify(JSON.stringify(this.previewOptions))}`,
                         `--cubemap-images-path=${JSON.stringify("resource://images/cubemap/")}`,
                         ...(paths.textsPath ? [`--texts-path=${JSON.stringify(paths.textsPath)}`] : []),
+                        ...(paths.vanillaResourcePacksContainerFolderPath ? [`--ddui-path=${JSON.stringify(paths.vanillaResourcePacksContainerFolderPath)}`] : []),
                     ],
                 },
             });
