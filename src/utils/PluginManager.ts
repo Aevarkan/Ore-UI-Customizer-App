@@ -9,13 +9,8 @@ import { APP_DATA_FOLDER_PATH, PLUGIN_FOLDER_PATH } from "./URLs.ts";
 import EventEmitter from "node:events";
 import { Dirent, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import * as CommentJSON from "comment-json";
-import {
-    blobToDataURI,
-    type EncodedPluginData,
-    type OreUICustomizerSettings,
-    type Plugin as Plugin_Type,
-    type PluginManifestJSON,
-} from "./ore-ui-customizer-assets.ts";
+import { blobToDataURI } from "./ore-ui-customizer-assets.ts";
+import type { EncodedPluginData, OreUICustomizerSettings, Plugin as Plugin_Type, PluginManifestJSON } from "ore-ui-customizer-types";
 import { sanitizeFilename } from "./sanitize-filename.ts";
 import { addFolderContents, addFolderContentsReversed } from "./folderContentsUtils.ts";
 import { app, dialog } from "@electron/remote";

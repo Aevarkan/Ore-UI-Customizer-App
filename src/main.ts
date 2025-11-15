@@ -27,7 +27,7 @@ import { format_version as ORE_UI_CUSTOMIZER_API_VERSION } from "./utils/ore-ui-
 import { APP_DATA_FOLDER_PATH, CONFIG_FOLDER_PATH, PLUGIN_FOLDER_PATH, THEME_FOLDER_PATH } from "./utils/URLs.ts";
 import { updateElectronApp } from "update-electron-app";
 import CommentJSON from "comment-json";
-import type { OreUICustomizerConfig as OreUICustomizerConfig_Type } from "./utils/ore-ui-customizer-assets.ts";
+import type { OreUICustomizerConfig as OreUICustomizerConfig_Type } from "ore-ui-customizer-types";
 import { Octokit } from "@octokit/rest";
 import semver from "semver";
 // import { setupTitlebar, attachTitlebarToWindow } from "custom-electron-titlebar/main";

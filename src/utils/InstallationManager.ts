@@ -10,7 +10,7 @@ import semver from "semver";
 import { API_SOURCE_WEBSITE_URL, APP_DATA_FOLDER_PATH, OLD_APP_DATA_FOLDER_PATH } from "./URLs";
 import "./zip.js";
 import { ConfigManager } from "./ConfigManager.ts";
-import type { EncodedPluginData, OreUICustomizerSettings } from "./ore-ui-customizer-assets.ts";
+import type { EncodedPluginData, OreUICustomizerSettings } from "ore-ui-customizer-types";
 import { applyMods, format_version } from "./ore-ui-customizer-api.ts";
 import { addFolderContentsReversed } from "./folderContentsUtils.ts";
 import { OreUICustomizerPlugin, PluginManager, type MissingPluginInfo } from "./PluginManager.ts";

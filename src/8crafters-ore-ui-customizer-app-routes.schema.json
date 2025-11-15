@@ -1,6 +1,6 @@
 {
     "$schema": "https://json-schema.org/draft-07/schema#",
-    "$id": "https://www.8crafter.com/schemas/8crafters-ore-ui-customizer-app-routes.schema.json",
+    "$id": "https://www.8crafter.com/schemas/ouic-app/routes.schema.json",
     "title": "8Crafter's Ore UI Customizer App routes.json Schema",
 
     "default": {
