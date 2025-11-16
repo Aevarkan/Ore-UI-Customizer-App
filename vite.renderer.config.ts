@@ -26,5 +26,5 @@ export default defineConfig((env: ConfigEnv) => ({
             externals,
         }),
     ],
+    server: { port: 5190 },
 }));
-
