@@ -120,6 +120,7 @@ namespace exports {
             ],
             attemptToKeepCurrentConfigWhenUpdatingVersion: false,
             bypassImportJSPluginPrompt: false,
+            hideUntrustedPluginWarningPopup: false,
             GUIScale: 0,
             GUIScaleOverride: null,
             downloadOreUICustomizerUpdatesSeparately: false,
@@ -365,6 +366,15 @@ namespace exports {
         }
         public set bypassImportJSPluginPrompt(value: boolean | undefined) {
             this.saveChanges({ bypassImportJSPluginPrompt: value ?? Config.defaults.bypassImportJSPluginPrompt });
+        }
+        /**
+         * Whether to hide the untrusted plugin warning popup.
+         */
+        public get hideUntrustedPluginWarningPopup(): boolean {
+            return this.getConfigData().hideUntrustedPluginWarningPopup ?? Config.defaults.hideUntrustedPluginWarningPopup;
+        }
+        public set hideUntrustedPluginWarningPopup(value: boolean | undefined) {
+            this.saveChanges({ hideUntrustedPluginWarningPopup: value ?? Config.defaults.hideUntrustedPluginWarningPopup });
         }
         /**
          * Whether to allow downloading versions of the Ore UI Customizer directly from 8Crafter's website.
