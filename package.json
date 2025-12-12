@@ -1,7 +1,7 @@
 {
     "name": "ore-ui-customizer-app",
     "productName": "ore-ui-customizer-app",
-    "version": "1.0.0-beta.19",
+    "version": "1.0.0-beta.20",
     "description": "The app version of 8Crafter's Ore UI Customizer.",
     "main": ".vite/build/main.js",
     "type": "commonjs",
@@ -51,7 +51,7 @@
         "eslint": "^8.57.1",
         "eslint-plugin-import": "^2.32.0",
         "ore-ui-customizer-types": "^1.0.1",
-        "ore-ui-types": "^1.0.2",
+        "ore-ui-types": "^1.1.0",
         "ts-node": "^10.9.2",
         "typescript": "^5.9.2",
         "vite": "^5.4.19",

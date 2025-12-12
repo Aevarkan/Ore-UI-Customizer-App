@@ -24,7 +24,7 @@ import "./utils/config.ts";
 import "./utils/version.ts";
 import { CustomizerAppPage } from "./utils/pageList.ts";
 import { format_version as ORE_UI_CUSTOMIZER_API_VERSION } from "./utils/ore-ui-customizer-api.ts";
-import { APP_DATA_FOLDER_PATH, CONFIG_FOLDER_PATH, PLUGIN_FOLDER_PATH, THEME_FOLDER_PATH } from "./utils/URLs.ts";
+import { APP_DATA_FOLDER_PATH, CACHE_FOLDER_PATH, CONFIG_FOLDER_PATH, PLUGIN_FOLDER_PATH, THEME_FOLDER_PATH } from "./utils/URLs.ts";
 import { updateElectronApp } from "update-electron-app";
 import CommentJSON from "comment-json";
 import type { OreUICustomizerConfig as OreUICustomizerConfig_Type } from "ore-ui-customizer-types";
@@ -65,6 +65,9 @@ if (!existsSync(path.join(APP_DATA_FOLDER_PATH, PLUGIN_FOLDER_PATH))) {
 }
 if (!existsSync(path.join(APP_DATA_FOLDER_PATH, THEME_FOLDER_PATH))) {
     mkdirSync(path.join(APP_DATA_FOLDER_PATH, THEME_FOLDER_PATH), { recursive: true });
+}
+if (!existsSync(path.join(APP_DATA_FOLDER_PATH, CACHE_FOLDER_PATH))) {
+    mkdirSync(path.join(APP_DATA_FOLDER_PATH, CACHE_FOLDER_PATH), { recursive: true });
 }
 
 const mainWindowIDs: number[] = [];
@@ -372,6 +375,28 @@ function createWindow(): void {
     }
     // mainWindow.webContents.setWindowOpenHandler((details)=>handleWindowOpen(details, mainWindow));
     enableRemoteForWebContents(mainWindow.webContents);
+
+    // CSP specific domain bypasses.
+    mainWindow.webContents.session.webRequest.onBeforeSendHeaders((details, callback) => {
+        if (/^assets\d\.xboxlive\.com$/.test(new URL(details.url).hostname)) {
+            callback({ requestHeaders: { Origin: "*", ...details.requestHeaders } });
+            return;
+        }
+        callback(details);
+    });
+    mainWindow.webContents.session.webRequest.onHeadersReceived((details, callback) => {
+        if (/^assets\d\.xboxlive\.com$/.test(new URL(details.url).hostname)) {
+            callback({
+                responseHeaders: {
+                    "Access-Control-Allow-Origin": ["*"],
+                    ...details.responseHeaders,
+                },
+            });
+            return;
+        }
+        callback(details);
+    });
+
     // console.log(Menu.getApplicationMenu());
 
     // const fileMenu: Menu = Menu.buildFromTemplate([

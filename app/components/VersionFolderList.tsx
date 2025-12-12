@@ -1,7 +1,7 @@
 import type { JSX } from "preact";
 import ItemListItem, { ItemListItemColumn } from "./ItemListItem";
 import ItemList, { type ItemListOptions } from "./ItemList";
-import type { VersionFolder } from "../../src/utils/InstallationManager";
+import type { InstallationStatus, VersionFolder } from "../../src/utils/InstallationManager";
 const { Menu } = require("@electron/remote") as typeof import("@electron/remote");
 
 export interface VersionFolderOptionsMenuItemConstructorOptions extends Omit<Electron.MenuItemConstructorOptions, "click"> {
@@ -59,7 +59,14 @@ export default function VersionFolderList(
                         versionFolderPath={versionFolder.path}
                         installationStatus={
                             versionFolder.installationStatus +
-                            (versionFolder.installationStatus === "Installed" || versionFolder.installationStatus === "Partially Failed Installation"
+                            ((
+                                [
+                                    "Installed",
+                                    "Partially Failed Installation",
+                                    "Corrupted (By Minecraft Update)",
+                                    "Corrupted (By Minecraft Update) (Backup Available)",
+                                ] as InstallationStatus[]
+                            ).includes(versionFolder.installationStatus)
                                 ? ` (v${versionFolder.installedVersion})` + (versionFolder.getIsUpdateAvailable() ? " (Update Available)" : "")
                                 : "")
                         }
@@ -94,7 +101,7 @@ export function VersionFolderListItem(
 ): JSX.SpecificElement<JSX.HTMLAttributes<HTMLDivElement> & VersionFolderListItemOptions> {
     return (
         <ItemListItem headerSizes={["40%", "60%"]}>
-            <ItemListItemColumn containerType="Span" contentType={options.displayVersionColoredHTML ? "RawHTML" : "Text"}>
+            <ItemListItemColumn containerType="Span" contentType={options.displayVersionColoredHTML ? "RawHTML" : "Text"} title={options.versionFolderPath}>
                 {options.displayVersionColoredHTML ? options.displayVersionColoredHTML : options.displayVersion}
             </ItemListItemColumn>
             <ItemListItemColumn containerType="None" contentType="Other">

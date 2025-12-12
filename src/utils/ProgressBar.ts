@@ -519,7 +519,7 @@ const htmlContent = `
             }
             
             #text{
-                height: 26px;
+                min-height: 26px;
                 overflow: auto;
                 font-size: 14px;
                 font-weight: bold;
@@ -528,7 +528,7 @@ const htmlContent = `
             }
             
             #detail{
-                height: 40px;
+                min-height: 40px;
                 margin: 5px 0;
                 padding: 5px 0;
                 word-break: break-all;

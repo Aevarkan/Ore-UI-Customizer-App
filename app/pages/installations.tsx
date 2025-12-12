@@ -151,6 +151,65 @@ export default function InstallationsPage(): JSX.SpecificElement<"center"> {
                                 },
                             });
                             break;
+                        case "Corrupted (By Minecraft Update) (Backup Available)":
+                            optionsList.push(
+                                {
+                                    label: "Restore From Backup",
+                                    async click(): Promise<void> {
+                                        try {
+                                            versionFolder.uninstall(true);
+                                        } catch (e: any) {
+                                            dialog.showMessageBox({
+                                                type: "error",
+                                                title: "Error",
+                                                message: e.message,
+                                                buttons: ["Close"],
+                                                noLink: true,
+                                            });
+                                        }
+                                        reloadMainPageContents();
+                                    },
+                                },
+                                {
+                                    label: "Repair GUI Folder",
+                                    async click(): Promise<void> {
+                                        try {
+                                            await versionFolder.repairVanillaGUI();
+                                        } catch (e: any) {
+                                            dialog.showMessageBox({
+                                                type: "error",
+                                                title: "Error",
+                                                message: e.message,
+                                                buttons: ["Close"],
+                                                noLink: true,
+                                            });
+                                        }
+                                        reloadMainPageContents();
+                                    },
+                                }
+                            );
+                            break;
+                        case "Corrupted (By Minecraft Update)":
+                            optionsList.push(
+                                {
+                                    label: "Repair GUI Folder",
+                                    async click(): Promise<void> {
+                                        try {
+                                            await versionFolder.repairVanillaGUI();
+                                        } catch (e: any) {
+                                            dialog.showMessageBox({
+                                                type: "error",
+                                                title: "Error",
+                                                message: e.message,
+                                                buttons: ["Close"],
+                                                noLink: true,
+                                            });
+                                        }
+                                        reloadMainPageContents();
+                                    },
+                                }
+                            );
+                            break;
                         case "Unknown (Backup Available)":
                             optionsList.push({
                                 label: "Open Backup Folder",

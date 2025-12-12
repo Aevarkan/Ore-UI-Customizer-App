@@ -10,11 +10,12 @@ export interface ItemListItemColumnOptions {
     containerType?: "Span" | "None";
     children?: any;
     contentType?: "Text" | "RawHTML" | "Other";
+    title?: string;
 }
 
 export function ItemListItemColumn(options: ItemListItemColumnOptions): JSX.SpecificElement<JSX.HTMLAttributes<HTMLDivElement> & ItemListItemColumnOptions> {
     return (
-        <div dangerouslySetInnerHTML={options.contentType === "RawHTML" ? { __html: options.children } : undefined}>
+        <div dangerouslySetInnerHTML={options.contentType === "RawHTML" ? { __html: options.children } : undefined} title={options.title}>
             {options.contentType !== "RawHTML" ? options.children : undefined}
         </div>
     );
@@ -32,13 +33,18 @@ export default function ItemListItem<HeaderSizes extends string[] | []>(options:
                     index === 0 ? (
                         <div
                             class={`item-list-item-column item-list-item-column-${index}`}
-                            style={`width: ${index === array.length - 1 ? 0 : options.headerSizes[index]}; font-size: var(--base-font-size); padding: 19px 0px; border: solid #ffffff; border-width: 0px 0px 0px 0px; text-align: left; vertical-align: middle; display: inline-block; line-height: 0; overflow-x: auto; flex-grow: ${index === array.length - 1 ? 1 : 0};`}
+                            style={`width: ${
+                                index === array.length - 1 ? 0 : options.headerSizes[index]
+                            }; font-size: var(--base-font-size); padding: 19px 0px; border: solid #ffffff; border-width: 0px 0px 0px 0px; text-align: left; vertical-align: middle; display: inline-block; line-height: 0; overflow-x: auto; flex-grow: ${
+                                index === array.length - 1 ? 1 : 0
+                            };`}
                             data-item-list-item-column={index}
                             dangerouslySetInnerHTML={
                                 child && child.props.containerType === "None" && child.props.contentType === "RawHTML"
                                     ? { __html: child.props.children }
                                     : undefined
                             }
+                            title={child?.props.title}
                         >
                             {!child ? undefined : child.props.containerType === "None" ? (
                                 child.props.contentType === "RawHTML" ? undefined : (
@@ -50,6 +56,7 @@ export default function ItemListItem<HeaderSizes extends string[] | []>(options:
                                     data-item-list-item-column={index}
                                     class="item-list-item-column-text"
                                     dangerouslySetInnerHTML={child.props.contentType === "RawHTML" ? { __html: child.props.children } : undefined}
+                                    title={child?.props.title}
                                 >
                                     {child.props.contentType === "RawHTML" ? undefined : child.props.children}
                                 </span>
@@ -58,7 +65,11 @@ export default function ItemListItem<HeaderSizes extends string[] | []>(options:
                     ) : (
                         <div
                             class={`item-list-item-column item-list-item-column-${index}`}
-                            style={`width: ${index === array.length - 1 ? 0 : `calc(${options.headerSizes[index]} - 1px)`}; font-size: var(--base-font-size); padding: 10px 0px; border: solid #ffffff; border-width: 0px 0px 0px 1px; text-align: left; display: inline-block; flex-grow: ${index === array.length - 1 ? 1 : 0};`}
+                            style={`width: ${
+                                index === array.length - 1 ? 0 : `calc(${options.headerSizes[index]} - 1px)`
+                            }; font-size: var(--base-font-size); padding: 10px 0px; border: solid #ffffff; border-width: 0px 0px 0px 1px; text-align: left; display: inline-block; flex-grow: ${
+                                index === array.length - 1 ? 1 : 0
+                            };`}
                             data-item-list-item-column={index}
                             dangerouslySetInnerHTML={
                                 child && child.props.containerType === "None" && child.props.contentType === "RawHTML"

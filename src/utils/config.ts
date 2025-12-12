@@ -508,8 +508,10 @@ namespace exports {
             "beta",
             "buzzy-bees",
             "chase-the-skies",
+            "copper-age",
             "creeking",
             "education-demo",
+            "mounts-of-mayhem",
             "preview",
             "spring-to-life",
             "trails-and-tales",
@@ -522,15 +524,17 @@ namespace exports {
             beta: "Beta",
             "buzzy-bees": "Buzzy Bees",
             "chase-the-skies": "Chase the Skies",
+            "copper-age": "Copper Age",
             creeking: "Creeking",
             "education-demo": "Education Demo",
+            "mounts-of-mayhem": "Mounts of Mayhem",
             preview: "Preview",
             "spring-to-life": "Spring to Life",
             "trails-and-tales": "Trails and Tales",
             "tricky-trials": "Tricky Trials",
             "wild-update": "Wild Update",
             "windows-10-edition-beta": "Windows 10 Edition Beta",
-        };
+        } satisfies { [key in (typeof config)["panorama"]]: string };
     }
 
     /**

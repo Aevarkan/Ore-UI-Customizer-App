@@ -18,6 +18,211 @@ import { Cubemap } from "../src/libs/@hatchibombotar-cubemap/index.ts";
 // @ts-ignore This is a valid import.
 import "../src/libs/@hatchibombotar-cubemap/index.css";
 
+let isClosing: boolean = false;
+let closeCanceled: boolean = false;
+getCurrentWindow().on("close", async (_event: Electron.Event): Promise<void> => {
+    isClosing = true;
+    __signalsToAbortBeforeUnload__.forEach((signal: AbortController): void => signal.abort(new DOMException("beforeunload", "AbortError")));
+    if (__promisesToResolveBeforeUnload__.length > 0) {
+        closeCanceled = true;
+        await Promise.allSettled(
+            __promisesToResolveBeforeUnload__.map(
+                (promise: Promise<any>): Promise<any> =>
+                    promise.finally(
+                        (): void =>
+                            void (
+                                __promisesToResolveBeforeUnload__.includes(promise) &&
+                                __promisesToResolveBeforeUnload__.splice(__promisesToResolveBeforeUnload__.indexOf(promise), 1)
+                            )
+                    )
+            )
+        );
+        location.reload();
+        isClosing = true;
+        closeCanceled = false;
+        getCurrentWindow().close();
+    }
+    //     if (tabManager.openTabs.length > 0) {
+    //         closeCanceled = true;
+    //         const unsavedTabs: TabManagerTab[] = tabManager.openTabs.filter((tab: TabManagerTab): boolean => tab.isModified());
+    //         if (unsavedTabs.length > 0) {
+    //             const result: number = dialog.showMessageBoxSync(getCurrentWindow(), {
+    //                 type: "warning",
+    //                 title: "Unsaved Changes",
+    //                 ...(unsavedTabs.length === 1
+    //                     ? {
+    //                           message: `Do you want to save the changes you made to ${unsavedTabs[0]!.name}?`,
+    //                           detail: "Your changes will be lost if you don't save them.",
+    //                       }
+    //                     : {
+    //                           message: `Do you want to save the changes to the following ${unsavedTabs.length} tab${unsavedTabs.length === 1 ? "" : "s"}?`,
+    //                           detail: `${unsavedTabs
+    //                               .map((tab: TabManagerTab): string => tab.name)
+    //                               .join("\n")}\n\nYour changes will be lost if you don't save them.`,
+    //                       }),
+    //                 buttons: ["Save", "Don't Save", "Cancel"],
+    //                 noLink: true,
+    //                 defaultId: 0,
+    //                 cancelId: 2,
+    //             });
+    //             switch (result) {
+    //                 case 0:
+    //                     try {
+    //                         await Promise.all(unsavedTabs.map((tab: TabManagerTab): Promise<void> => tab.save().then((): Promise<void> => tab.close())));
+    //                     } catch (e) {
+    //                         console.error(e);
+    //                     }
+    //                     isClosing = true;
+    //                     closeCanceled = false;
+    //                     getCurrentWindow().close();
+    //                     return;
+    //                 case 1:
+    //                     try {
+    //                         await Promise.all(unsavedTabs.map((tab: TabManagerTab): Promise<void> => tab.close()));
+    //                     } catch (e) {
+    //                         console.error(e);
+    //                     }
+    //                     isClosing = true;
+    //                     closeCanceled = false;
+    //                     getCurrentWindow().close();
+    //                     return;
+    //                 case 2:
+    //                     return;
+    //             }
+
+    //             // event.preventDefault();
+    //             // event.returnValue = "";
+    //             /* [Window Title]
+    // Visual Studio Code
+
+    // [Main Instruction]
+    // Do you want to save the changes to the following 2 files?
+
+    // [Content]
+    // TabManager.ts
+    // app.tsx
+
+    // Your changes will be lost if you don't save them.
+
+    // [Save All] [Don't Save] [Cancel] */
+    //         } else {
+    //             try {
+    //                 await Promise.all(unsavedTabs.map((tab: TabManagerTab): Promise<void> => tab.close()));
+    //             } catch (e) {
+    //                 console.error(e);
+    //             }
+    //             isClosing = true;
+    //             closeCanceled = false;
+    //             getCurrentWindow().close();
+    //         }
+    //     }
+});
+window.addEventListener("beforeunload", async (event: BeforeUnloadEvent): Promise<void> => {
+    if (isClosing) {
+        isClosing = false;
+        if (closeCanceled) {
+            event.preventDefault();
+            closeCanceled = false;
+        }
+        return;
+    }
+    if (!event.defaultPrevented) {
+        __signalsToAbortBeforeUnload__.forEach((signal: AbortController): void => {
+            signal.abort(new DOMException("beforeunload", "AbortError"));
+            __signalsToAbortBeforeUnload__.includes(signal) && __signalsToAbortBeforeUnload__.splice(__signalsToAbortBeforeUnload__.indexOf(signal), 1);
+        });
+        if (__promisesToResolveBeforeUnload__.length > 0) {
+            event.preventDefault();
+            await Promise.allSettled(
+                __promisesToResolveBeforeUnload__.map(
+                    (promise: Promise<any>): Promise<any> =>
+                        promise.finally(
+                            (): void =>
+                                void (
+                                    __promisesToResolveBeforeUnload__.includes(promise) &&
+                                    __promisesToResolveBeforeUnload__.splice(__promisesToResolveBeforeUnload__.indexOf(promise), 1)
+                                )
+                        )
+                )
+            );
+            location.reload();
+        } else {
+            getCurrentWindow().setProgressBar(-1);
+        }
+    }
+    // if (!isClosing && tabManager.openTabs.length > 0) {
+    //     const unsavedTabs: TabManagerTab[] = tabManager.openTabs.filter((tab: TabManagerTab): boolean => tab.isModified());
+    //     if (unsavedTabs.length > 0) {
+    //         const result: number = dialog.showMessageBoxSync(getCurrentWindow(), {
+    //             type: "warning",
+    //             title: "Unsaved Changes",
+    //             ...(unsavedTabs.length === 1
+    //                 ? {
+    //                         message: `Do you want to save the changes you made to ${unsavedTabs[0]!.name}?`,
+    //                         detail: "Your changes will be lost if you don't save them.",
+    //                     }
+    //                 : {
+    //                         message: `Do you want to save the changes to the following ${unsavedTabs.length} tab${unsavedTabs.length === 1 ? "" : "s"}?`,
+    //                         detail: `${unsavedTabs
+    //                             .map((tab: TabManagerTab): string => tab.name)
+    //                             .join("\n")}\n\nYour changes will be lost if you don't save them.`,
+    //                     }),
+    //             buttons: ["Save", "Don't Save", "Cancel"],
+    //             noLink: true,
+    //             defaultId: 0,
+    //             cancelId: 2,
+    //         });
+    //         switch (result) {
+    //             case 0:
+    //                 event.preventDefault();
+    //                 try {
+    //                     await Promise.all(unsavedTabs.map((tab: TabManagerTab): Promise<void> => tab.save().then((): Promise<void> => tab.close())));
+    //                 } catch (e) {
+    //                     console.error(e);
+    //                 }
+    //                 location.reload();
+    //                 break;
+    //             case 1:
+    //                 event.preventDefault();
+    //                 try {
+    //                     await Promise.all(unsavedTabs.map((tab: TabManagerTab): Promise<void> => tab.close()));
+    //                 } catch (e) {
+    //                     console.error(e);
+    //                 }
+    //                 location.reload();
+    //                 break;
+    //             case 2:
+    //                 event.preventDefault();
+    //                 break;
+    //         }
+
+    //         // event.preventDefault();
+    //         // event.returnValue = "";
+    //         /* [Window Title]
+    // Visual Studio Code
+
+    // [Main Instruction]
+    // Do you want to save the changes to the following 2 files?
+
+    // [Content]
+    // TabManager.ts
+    // app.tsx
+
+    // Your changes will be lost if you don't save them.
+
+    // [Save All] [Don't Save] [Cancel] */
+    //     } else {
+    //         event.preventDefault();
+    //         try {
+    //             await Promise.all(tabManager.openTabs.map((tab: TabManagerTab): Promise<void> => tab.close()));
+    //         } catch (e) {
+    //             console.error(e);
+    //         }
+    //         location.reload();
+    //     }
+    // }
+});
+
 // Panorama
 const panoramaContainer: HTMLDivElement = document.createElement("div");
 panoramaContainer.id = "panorama-container";

@@ -10,6 +10,18 @@ import { resolve as resolveURL } from "node:url";
 import process from "node:process";
 
 /**
+ * The type for a subpath structure.
+ */
+type SubpathStructure<Root extends boolean = true> = (Root extends true
+    ? unknown
+    : {
+          /**
+           * The the subpath at this key.
+           */
+          _: `./${string}` | SubpathStructure<false>;
+      }) & { [key in string]: `./${string}` | SubpathStructure<false> };
+
+/**
  * The source website for 8Crafter's Ore UI Customizer.
  */
 export const API_SOURCE_WEBSITE_URL = "https://www.8crafter.com";
@@ -37,6 +49,38 @@ export const PLUGIN_FOLDER_PATH = "./plugins";
  * The path to the folder that stores all of the saved themes for 8Crafter's Ore UI Customizer.
  */
 export const THEME_FOLDER_PATH = "./themes";
+
+/**
+ * The path to the folder that stores all of the cache files for 8Crafter's Ore UI Customizer.
+ */
+export const CACHE_FOLDER_PATH = "./cache";
+
+/**
+ * The subpaths of the cache folder for 8Crafter's Ore UI Customizer.
+ *
+ * These subpaths may not always be present, so may need to be created manually.
+ */
+export const CACHE_FOLDER_SUBPATHS = {
+    /**
+     * The subpath for the folder that contains cached MSIXVC files.
+     */
+    MSIXVC: "./msixvc",
+    /**
+     * The subpaths for the folder that contains temporary files.
+     *
+     * This subpath and its contents may be deleted at any time.
+     */
+    TMP: {
+        /**
+         * The subpath for the folder that contains temporary files.
+         */
+        _: "./tmp",
+        /**
+         * The subpath for the folder that contains temporary MSIXVC files.
+         */
+        MSIXVC: "./tmp/msixvc",
+    },
+} as const satisfies SubpathStructure;
 
 /**
  * The URL of the API dependency list for 8Crafter's Ore UI Customizer.

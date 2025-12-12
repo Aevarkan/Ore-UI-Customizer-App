@@ -448,7 +448,7 @@ export const PluginManager = new (class PluginManager extends EventEmitter<Plugi
                         checkboxLabel: "Don't ask again",
                     });
                     if (result.response === 1) {
-                        throw new Error("Cancelled by user.");
+                        throw new Error("Canceled by user.");
                     }
                     if (result.checkboxChecked) {
                         config.bypassImportJSPluginPrompt = true;
@@ -537,7 +537,7 @@ export const PluginManager = new (class PluginManager extends EventEmitter<Plugi
                             checkboxLabel: "Don't ask again",
                         });
                         if (result.response === 1) {
-                            throw new Error("Cancelled by user.");
+                            throw new Error("Canceled by user.");
                         }
                         if (result.checkboxChecked) {
                             config.bypassImportJSPluginPrompt = true;
@@ -681,7 +681,7 @@ export const PluginManager = new (class PluginManager extends EventEmitter<Plugi
                         checkboxLabel: "Don't ask again",
                     });
                     if (result.response === 1) {
-                        throw new Error("Cancelled by user.");
+                        throw new Error("Canceled by user.");
                     }
                     if (result.checkboxChecked) {
                         config.bypassImportJSPluginPrompt = true;
@@ -768,7 +768,7 @@ export const PluginManager = new (class PluginManager extends EventEmitter<Plugi
                             checkboxLabel: "Don't ask again",
                         });
                         if (result.response === 1) {
-                            throw new Error("Cancelled by user.");
+                            throw new Error("Canceled by user.");
                         }
                         if (result.checkboxChecked) {
                             config.bypassImportJSPluginPrompt = true;
@@ -933,7 +933,7 @@ export const PluginManager = new (class PluginManager extends EventEmitter<Plugi
                     checkboxLabel: "Don't ask again",
                 });
                 if (result.response === 1) {
-                    throw new Error("Cancelled by user.");
+                    throw new Error("Canceled by user.");
                 }
                 if (result.checkboxChecked) {
                     config.bypassImportJSPluginPrompt = true;

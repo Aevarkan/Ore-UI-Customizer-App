@@ -34,7 +34,8 @@
         "no-empty": "off",
         "no-empty-function": "off",
         "no-unused-vars": "off",
-        "no-control-regex": "off"
+        "no-control-regex": "off",
+        "no-unexpected-multiline": "off"
     },
     "overrides": [
         {

@@ -8,9 +8,9 @@ import "./init/SoundEffects.ts";
 import "./utils/ProgressBar.ts";
 import "./utils/config.ts";
 import "./utils/version.ts";
-import "./utils/URLs.ts";
-import { app, autoUpdater, dialog, Menu, nativeTheme, shell } from "@electron/remote";
+import { autoUpdater, dialog, Menu, nativeTheme, shell } from "@electron/remote";
 import { CustomizerAppPage } from "./utils/pageList.ts";
+import { APP_DATA_FOLDER_PATH } from "./utils/URLs.ts";
 /* import { Titlebar } from "custom-electron-titlebar";
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -292,9 +292,24 @@ const menu = Menu.buildFromTemplate([
         type: "submenu",
         submenu: [
             {
+                label: "Open Customizer App Data Folder",
+                click(): void {
+                    shell.openPath(APP_DATA_FOLDER_PATH);
+                },
+            },
+            {
+                type: "separator",
+            },
+            {
                 label: "Ore UI Customizer Website",
                 click(): void {
                     shell.openExternal("https://www.8crafter.com/utilities/ore-ui-customizer");
+                },
+            },
+            {
+                label: "GitHub",
+                click(): void {
+                    shell.openExternal("https://github.com/8Crafter-Studios/Ore-UI-Customizer-App");
                 },
             },
             {
