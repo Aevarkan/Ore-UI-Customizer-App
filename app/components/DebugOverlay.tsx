@@ -626,6 +626,19 @@ function DebugOverlay_Config(): JSX.Element {
                     }}
                 >
                     <CrispyDropShadowSpan class="debug-overlay-config-mode-item-label" data-color="#AAAAAAFF">
+                        Hide Untrusted Plugin Warning Popup (Not Implemented):{" "}
+                    </CrispyDropShadowSpan>
+                    <CrispyDropShadowSpan class="debug-overlay-config-mode-item-value">
+                        {JSONB.stringify(configData.hideUntrustedPluginWarningPopup)}
+                    </CrispyDropShadowSpan>
+                </span>
+                <span
+                    class="crispy"
+                    style={{
+                        display: "block",
+                    }}
+                >
+                    <CrispyDropShadowSpan class="debug-overlay-config-mode-item-label" data-color="#AAAAAAFF">
                         Debug HUD:{" "}
                     </CrispyDropShadowSpan>
                     <CrispyDropShadowSpan class="debug-overlay-config-mode-item-value">{JSONB.stringify(configData.debugHUD)}</CrispyDropShadowSpan>

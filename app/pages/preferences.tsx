@@ -228,12 +228,12 @@ export default function PreferencesPage(): JSX.SpecificElement<"center"> {
                 </SettingsSidebarSection>
             </SettingsSidebar>
             <SettingsSectionContainer sectionWidth="60%" sectionID="general" sidebarRadioID="perferences_section" default>
-                <Toggle
+                {/* <Toggle
                     label="Test Toggle"
                     onChange={(event: JSX.TargetedEvent<HTMLInputElement, Event>): void => {
                         // console.log("test", event.returnValue, event.currentTarget.checked);
                     }}
-                ></Toggle>
+                ></Toggle> */}
             </SettingsSectionContainer>
             <SettingsSectionContainer sectionWidth="60%" sectionID="video" sidebarRadioID="perferences_section">
                 <Slider
