@@ -119,4 +119,3 @@ This is the installations page of the app.
 This is the configs page of the app.
 
 ![Plugins Page](.github/assets/plugins_page.png)
-
