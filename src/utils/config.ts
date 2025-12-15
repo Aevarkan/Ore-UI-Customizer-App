@@ -518,6 +518,7 @@ namespace exports {
             "tricky-trials",
             "wild-update",
             "windows-10-edition-beta",
+            "latest",
         ] as const;
         export const panoramaDisplayMapping = {
             off: "Off",
@@ -534,7 +535,9 @@ namespace exports {
             "tricky-trials": "Tricky Trials",
             "wild-update": "Wild Update",
             "windows-10-edition-beta": "Windows 10 Edition Beta",
+            latest: "Latest",
         } satisfies { [key in (typeof config)["panorama"]]: string };
+        export const latestConfig: Exclude<typeof panoramaList[number], "off" | "latest"> = "mounts-of-mayhem";
     }
 
     /**

@@ -230,15 +230,16 @@ panoramaContainer.style.position = "fixed";
 panoramaContainer.style.zIndex = "-10";
 document.getElementsByTagName("body")[0]!.appendChild(panoramaContainer);
 if (config.panorama !== "off") {
+    const panorama = config.panorama === "latest" ? config.constants.latestConfig : config.panorama;
     globalThis.cubemap = new Cubemap(
         panoramaContainer,
         [
-            "resource://images/cubemap/" + config.panorama + "/front.png",
-            "resource://images/cubemap/" + config.panorama + "/right.png",
-            "resource://images/cubemap/" + config.panorama + "/back.png",
-            "resource://images/cubemap/" + config.panorama + "/left.png",
-            "resource://images/cubemap/" + config.panorama + "/top.png",
-            "resource://images/cubemap/" + config.panorama + "/bottom.png",
+            "resource://images/cubemap/" + panorama + "/front.png",
+            "resource://images/cubemap/" + panorama + "/right.png",
+            "resource://images/cubemap/" + panorama + "/back.png",
+            "resource://images/cubemap/" + panorama + "/left.png",
+            "resource://images/cubemap/" + panorama + "/top.png",
+            "resource://images/cubemap/" + panorama + "/bottom.png",
         ],
         {
             width: "100vw",
@@ -261,12 +262,12 @@ config.on("settingChanged:panorama", (panorama: typeof config.panorama): void =>
         globalThis.cubemap = new Cubemap(
             panoramaContainer,
             [
-                "resource://images/cubemap/" + panorama + "/front.png",
-                "resource://images/cubemap/" + panorama + "/right.png",
-                "resource://images/cubemap/" + panorama + "/back.png",
-                "resource://images/cubemap/" + panorama + "/left.png",
-                "resource://images/cubemap/" + panorama + "/top.png",
-                "resource://images/cubemap/" + panorama + "/bottom.png",
+                "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/front.png",
+                "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/right.png",
+                "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/back.png",
+                "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/left.png",
+                "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/top.png",
+                "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/bottom.png",
             ],
             {
                 width: "100vw",
@@ -280,12 +281,12 @@ config.on("settingChanged:panorama", (panorama: typeof config.panorama): void =>
         );
     } else if (panorama !== "off" && globalThis.cubemap !== undefined) {
         globalThis.cubemap.images = [
-            "resource://images/cubemap/" + panorama + "/front.png",
-            "resource://images/cubemap/" + panorama + "/right.png",
-            "resource://images/cubemap/" + panorama + "/back.png",
-            "resource://images/cubemap/" + panorama + "/left.png",
-            "resource://images/cubemap/" + panorama + "/top.png",
-            "resource://images/cubemap/" + panorama + "/bottom.png",
+            "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/front.png",
+            "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/right.png",
+            "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/back.png",
+            "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/left.png",
+            "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/top.png",
+            "resource://images/cubemap/" + (panorama === "latest" ? config.constants.latestConfig : panorama) + "/bottom.png",
         ];
         globalThis.cubemap.center.replaceChildren();
         globalThis.cubemap.load();
