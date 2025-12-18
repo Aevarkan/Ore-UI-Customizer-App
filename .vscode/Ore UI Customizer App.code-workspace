@@ -7,5 +7,7 @@
 			"path": "../resources/ore-ui-viewer"
 		}
 	],
-	"settings": {}
+	"settings": {
+		"powershell.cwd": "Ore UI Customizer App"
+	}
 }
