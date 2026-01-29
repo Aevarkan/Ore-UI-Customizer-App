@@ -684,7 +684,7 @@ export function DefaultPluginsListItem(): JSX.SpecificElement<"div"> {
                     <img
                         title="Plugin Icon"
                         class="piximg nsel ndrg"
-                        src="resource://icon.png"
+                        src="resource://./icon.png"
                         style={{ width: "calc(34px * var(--gui-scale))", height: "calc(34px * var(--gui-scale))" }}
                     />
                 </div>
@@ -745,3 +745,4 @@ export function DefaultPluginsListItem(): JSX.SpecificElement<"div"> {
         </div>
     );
 }
+
