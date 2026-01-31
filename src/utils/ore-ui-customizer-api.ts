@@ -13,7 +13,7 @@ import "./zip.js";
 /**
  * The version of the Ore UI Customizer API.
  */
-export const format_version = "1.11.0";
+export const format_version = "1.11.1";
 
 /**
  * The result of the {@link applyMods} function.
@@ -1198,7 +1198,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().advanced.worldSeed,
                             maxLength: 3000,
-                            value: rawData.get().advanced.worldSeed,
+                            value: String(rawData.get().advanced.worldSeed ?? ""),
                             onChange: (0, ${extractedSymbolNames.facetHolder}.useFacetCallback)((e) => (t) => (e.advanced.worldSeed = t), [], [rawData]),
                             filterProfanity: !1,
                             disabled: false,
@@ -1209,7 +1209,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().multiplayer.playerPermissions,
                             maxLength: 3000,
-                            value: rawData.get().multiplayer.playerPermissions,
+                            value: String(rawData.get().multiplayer.playerPermissions ?? ""),
                             onChange: playerPermissionsChange,
                             filterProfanity: !1,
                             disabled: false,
@@ -1221,7 +1221,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().multiplayer.playerAccess,
                             maxLength: 3000,
-                            value: rawData.get().multiplayer.playerAccess,
+                            value: String(rawData.get().multiplayer.playerAccess ?? ""),
                             onChange: (0, ${extractedSymbolNames.facetHolder}.useFacetCallback)((e) => (t) => (e.multiplayer.playerAccess = Number(t)), [], [rawData]),
                             filterProfanity: !1,
                             disabled: false,
@@ -1232,7 +1232,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().general.gameMode,
                             maxLength: 3000,
-                            value: rawData.get().general.gameMode,
+                            value: String(rawData.get().general.gameMode ?? ""),
                             onChange: (0, ${extractedSymbolNames.facetHolder}.useFacetCallback)((e) => (t) => (e.general.gameMode = Number(t)), [], [rawData]),
                             filterProfanity: !1,
                             disabled: false,
@@ -1243,7 +1243,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().general.difficulty,
                             maxLength: 3000,
-                            value: rawData.get().general.difficulty,
+                            value: String(rawData.get().general.difficulty ?? ""),
                             onChange: (0, ${extractedSymbolNames.facetHolder}.useFacetCallback)((e) => (t) => (e.general.difficulty = Number(t)), [], [rawData]),
                             filterProfanity: !1,
                             disabled: false,
@@ -1254,7 +1254,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().advanced.generatorType,
                             maxLength: 3000,
-                            value: rawData.get().advanced.generatorType,
+                            value: String(rawData.get().advanced.generatorType ?? ""),
                             onChange: (0, ${extractedSymbolNames.facetHolder}.useFacetCallback)((e) => (t) => (e.advanced.generatorType = Number(t)), [], [rawData]),
                             filterProfanity: !1,
                             disabled: false,
@@ -1265,7 +1265,7 @@ export async function applyMods(file: Blob, options: ApplyModsOptions = {}): Pro
                             gamepadIndex: 1,
                             placeholder: typeof rawData.get().advanced.simulationDistance,
                             maxLength: 3000,
-                            value: rawData.get().advanced.simulationDistance,
+                            value: String(rawData.get().advanced.simulationDistance ?? ""),
                             onChange: (0, ${extractedSymbolNames.facetHolder}.useFacetCallback)((e) => (t) => (e.advanced.simulationDistance = Number(t)), [], [rawData]),
                             filterProfanity: !1,
                             disabled: false,
