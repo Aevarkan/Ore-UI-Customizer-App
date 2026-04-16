@@ -1,13 +1,19 @@
 {
-	"folders": [
-		{
-			"path": ".."
-		},
-		{
-			"path": "../resources/ore-ui-viewer"
-		}
-	],
-	"settings": {
-		"powershell.cwd": "Ore UI Customizer App"
-	}
+    "folders": [
+        {
+            "path": "..",
+        },
+        {
+            "path": "../resources/assets/oreui",
+        },
+        {
+            "path": "../resources/ore-ui-viewer",
+        },
+    ],
+    "settings": {
+        "powershell.cwd": "Ore UI Customizer App",
+        "eslint.useFlatConfig": false,
+        "typescript.tsdk": "",
+        "js/ts.tsdk": "",
+    },
 }

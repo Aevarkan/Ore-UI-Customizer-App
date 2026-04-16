@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-empty-object-type */
 /**
  * zip.js is a JavaScript open-source library (BSD-3-Clause license) for
  * compressing and decompressing zip files. It has been designed to handle large amounts
@@ -550,7 +551,7 @@ declare namespace zip {
     /**
      * Represents a URL stored into a `string`.
      */
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/no-wrapper-object-types
     interface URLString extends String {}
 
     /**

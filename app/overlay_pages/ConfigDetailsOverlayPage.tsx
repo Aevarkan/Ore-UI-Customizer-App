@@ -42,7 +42,7 @@ export default function ConfigDetailsOverlayPage(props: ConfigDetailsOverlayPage
                         licenseRef.current.setAttribute("data-choosealicense-license-url", license);
                     });
                 } else {
-                    licenseRef.current;
+                    // licenseRef.current;
                     licenseRef.current.style.cursor = "help";
                     licenseRef.current.setAttribute("data-choosealicense-license-url", license);
                 }

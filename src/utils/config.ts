@@ -12,9 +12,9 @@ import process from "node:process";
 import { EventEmitter } from "node:events";
 import "../init/JSONB.ts";
 const nativeTheme =
-    process.type === "browser"
-        ? (require("electron") as typeof import("electron")).nativeTheme
-        : (require("@electron/remote") as typeof import("@electron/remote")).nativeTheme;
+    process.type === "browser" ?
+        (require("electron") as typeof import("electron")).nativeTheme
+    :   (require("@electron/remote") as typeof import("@electron/remote")).nativeTheme;
 
 namespace exports {
     export const volumeCategories: ["master", "ui"] = ["master", "ui"];
@@ -28,7 +28,7 @@ namespace exports {
          * Emitted when the corresponding setting is changed.
          */
         [key in PropertyPathsWithoutOuterContainingProperties<ConfigJSON> as `settingChanged:${Join<key, ".">}`]: [
-            value: GetPropertyValueAtPath<ConfigJSON, key>
+            value: GetPropertyValueAtPath<ConfigJSON, key>,
         ];
     };
     export interface ConfigEventMap extends ConfigEventMap_SettingChangedEvents {
@@ -42,7 +42,7 @@ namespace exports {
         settingChanged: {
             [key in PropertyPathsWithoutOuterContainingProperties<ConfigJSON> as Join<key, ".">]: [
                 key: Join<key, ".">,
-                value: GetPropertyValueAtPath<ConfigJSON, key>
+                value: GetPropertyValueAtPath<ConfigJSON, key>,
             ];
         }[Join<PropertyPathsWithoutOuterContainingProperties<ConfigJSON>, ".">];
     }
@@ -50,42 +50,37 @@ namespace exports {
         ExcludeMethods<ExcludeReadonlyProps<T>>,
         "constructor" | keyof EventEmitter
     >;
-    type GetBaseJSONTypeOfConfig<T extends Config | SubConfigValueTypes, P extends boolean = false> = P extends true
-        ? Partial<GetBaseJSONTypeOfConfig_Inner<T>>
-        : GetBaseJSONTypeOfConfig_Inner<T>;
+    type GetBaseJSONTypeOfConfig<T extends Config | SubConfigValueTypes, P extends boolean = false> =
+        P extends true ? Partial<GetBaseJSONTypeOfConfig_Inner<T>> : GetBaseJSONTypeOfConfig_Inner<T>;
     type GetSubConfigJSONTypeOfConfig_Inner<T extends Config | SubConfigValueTypes, P extends boolean = false> = Mutable<{
         [key in keyof T as T[key] extends SubConfigValueTypes ? key : never]: T[key] extends SubConfigValueTypes ? GetJSONTypeOfConfig<T[key], P> : never;
     }>;
-    type GetSubConfigJSONTypeOfConfig<T extends Config | SubConfigValueTypes, P extends boolean = false> = P extends true
-        ? Partial<GetSubConfigJSONTypeOfConfig_Inner<T, P>>
-        : GetSubConfigJSONTypeOfConfig_Inner<T>;
+    type GetSubConfigJSONTypeOfConfig<T extends Config | SubConfigValueTypes, P extends boolean = false> =
+        P extends true ? Partial<GetSubConfigJSONTypeOfConfig_Inner<T, P>> : GetSubConfigJSONTypeOfConfig_Inner<T>;
     type GetJSONTypeOfConfigA<T extends Config | SubConfigValueTypes, P extends boolean = false> = {
         [key in NonNullable<keyof GetBaseJSONTypeOfConfig<T, false>>]: GetBaseJSONTypeOfConfig<T, P>[key];
     } & {
         [key in NonNullable<keyof GetSubConfigJSONTypeOfConfig<T, false>>]: T[key] extends SubConfigValueTypes ? GetJSONTypeOfConfig<T[key], P> : never;
     };
-    type GetJSONTypeOfConfigB<T extends Config | SubConfigValueTypes, P extends boolean = false> = P extends true
-        ? Partial<MergeObjectTypes<GetJSONTypeOfConfigA<T, P>>>
-        : MergeObjectTypes<GetJSONTypeOfConfigA<T, P>>;
+    type GetJSONTypeOfConfigB<T extends Config | SubConfigValueTypes, P extends boolean = false> =
+        P extends true ? Partial<MergeObjectTypes<GetJSONTypeOfConfigA<T, P>>> : MergeObjectTypes<GetJSONTypeOfConfigA<T, P>>;
 
     type GetJSONTypeOfConfigInner<T extends Config | SubConfigValueTypes, P extends boolean = false> = {
-        [key in NonNullable<
-            keyof GetBaseJSONTypeOfConfig<T, false> | keyof GetSubConfigJSONTypeOfConfig<T, false>
-        >]: key extends keyof GetSubConfigJSONTypeOfConfig<T>
-            ? T[key] extends SubConfigValueTypes
-                ? GetJSONTypeOfConfig<T[key], P>
-                : never
-            : key extends keyof GetBaseJSONTypeOfConfig<T, false>
-            ? GetBaseJSONTypeOfConfig<T, P>[key]
-            : never;
+        [key in NonNullable<keyof GetBaseJSONTypeOfConfig<T, false> | keyof GetSubConfigJSONTypeOfConfig<T, false>>]: key extends (
+            keyof GetSubConfigJSONTypeOfConfig<T>
+        ) ?
+            T[key] extends SubConfigValueTypes ?
+                GetJSONTypeOfConfig<T[key], P>
+            :   never
+        : key extends keyof GetBaseJSONTypeOfConfig<T, false> ? GetBaseJSONTypeOfConfig<T, P>[key]
+        : never;
     };
-    type GetJSONTypeOfConfig<T extends Config | SubConfigValueTypes, P extends boolean = false> = P extends true
-        ? Partial<GetJSONTypeOfConfigInner<T, P>>
-        : GetJSONTypeOfConfigInner<T>;
+    type GetJSONTypeOfConfig<T extends Config | SubConfigValueTypes, P extends boolean = false> =
+        P extends true ? Partial<GetJSONTypeOfConfigInner<T, P>> : GetJSONTypeOfConfigInner<T>;
     type ConfigJSONBase<P extends boolean = false> = GetBaseJSONTypeOfConfig<Config, P>;
-    type ConfigJSONSubConfigs<P extends boolean = false> = P extends true
-        ? Partial<Mutable<{ [key in keyof Config as Config[key] extends SubConfigValueTypes ? key : never]: Config[key] }>>
-        : Mutable<{ [key in keyof Config as Config[key] extends SubConfigValueTypes ? key : never]: Config[key] }>;
+    type ConfigJSONSubConfigs<P extends boolean = false> =
+        P extends true ? Partial<Mutable<{ [key in keyof Config as Config[key] extends SubConfigValueTypes ? key : never]: Config[key] }>>
+        :   Mutable<{ [key in keyof Config as Config[key] extends SubConfigValueTypes ? key : never]: Config[key] }>;
     export type ConfigJSON<P extends boolean = false> = GetJSONTypeOfConfig<Config, P>;
     function cullUndefinedProperties<T extends { [key: PropertyKey]: unknown }>(
         obj: T
@@ -93,9 +88,8 @@ namespace exports {
         return Object.fromEntries(Object.entries(obj).filter(([key, value]: [key: string, value: unknown]): boolean => value !== undefined)) as any;
     }
     type DeepSubConfigKeyStructureOfConfig<T extends Config | SubConfigValueTypes> = {
-        [key in keyof T as T[key] extends SubConfigValueTypes ? key : never]: T[key] extends SubConfigValueTypes
-            ? DeepSubConfigKeyStructureOfConfig<T[key]>
-            : never;
+        [key in keyof T as T[key] extends SubConfigValueTypes ? key : never]: T[key] extends SubConfigValueTypes ? DeepSubConfigKeyStructureOfConfig<T[key]>
+        :   never;
     };
     const subConfigKeyStructure = {
         volume: {},
@@ -115,8 +109,11 @@ namespace exports {
                 "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions",
                 // GDK Preview (Windows)
                 "%appdata%/../../../../XboxGames/Minecraft Preview for Windows",
+                "%appdata%/../../../../XboxGames/Minecraft Preview for Windows_1",
                 // GDK (Windows)
                 "%appdata%/../../../../XboxGames/Minecraft for Windows",
+                "%appdata%/../../../../XboxGames/Minecraft for Windows_1",
+                "%appdata%/../../../../XboxGames/7792D9CE-355A-493C-AFBD-768F4A77C3B0",
             ],
             attemptToKeepCurrentConfigWhenUpdatingVersion: false,
             bypassImportJSPluginPrompt: false,
@@ -162,36 +159,39 @@ namespace exports {
                     // console.log(0, path, key, value);
                     if (key in Config.defaults && getPropertyAtPath(subConfigKeyStructure, [...(path as Path), key])) {
                         // console.log(0.1, path, key, value);
-                        [...path, key].reduce((previousValue: any, currentValue: string, currentIndex: number, array: [...Path, typeof key][number][]): any => {
-                            if (
-                                previousValue[currentValue] !== undefined &&
-                                (typeof previousValue[currentValue] !== "object" || previousValue[currentValue] === null)
-                            ) {
-                                return;
-                            }
-                            if (currentIndex === array.length - 1) {
-                                // console.log(1, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
-                                if (getPropertyAtPath(newData, array as Path) !== undefined) {
-                                    previousValue[currentValue] = mergeConfigData(oldData[currentValue as never], newData[currentValue as never]);
-                                } else {
-                                    previousValue[currentValue] =
-                                        getPropertyAtPath(existingData, array as Path) ?? getPropertyAtPath(Config.defaults, array as Path) ?? {};
+                        [...path, key].reduce(
+                            (previousValue: any, currentValue: string | number, currentIndex: number, array: (Path[number] | typeof key)[]): any => {
+                                if (
+                                    previousValue[currentValue] !== undefined &&
+                                    (typeof previousValue[currentValue] !== "object" || previousValue[currentValue] === null)
+                                ) {
+                                    return;
                                 }
-                                // console.log(2, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
-                                return previousValue[currentValue];
-                            } else if (currentValue in previousValue) {
-                                // console.log(3, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
-                                return previousValue[currentValue];
-                            } else {
-                                // console.log(4, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
-                                previousValue[currentValue] =
-                                    getPropertyAtPath(existingData, array.slice(0, currentIndex + 1)) ??
-                                    getPropertyAtPath(Config.defaults, array.slice(0, currentIndex + 1)) ??
-                                    {};
-                                // console.log(5, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
-                                return previousValue[currentValue];
-                            }
-                        }, data);
+                                if (currentIndex === array.length - 1) {
+                                    // console.log(1, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
+                                    if (getPropertyAtPath(newData, array as Path) !== undefined) {
+                                        previousValue[currentValue] = mergeConfigData(oldData[currentValue as never], newData[currentValue as never]);
+                                    } else {
+                                        previousValue[currentValue] =
+                                            getPropertyAtPath(existingData, array as Path) ?? getPropertyAtPath(Config.defaults, array as Path) ?? {};
+                                    }
+                                    // console.log(2, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
+                                    return previousValue[currentValue];
+                                } else if (currentValue in previousValue) {
+                                    // console.log(3, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
+                                    return previousValue[currentValue];
+                                } else {
+                                    // console.log(4, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
+                                    previousValue[currentValue] =
+                                        getPropertyAtPath(existingData, array.slice(0, currentIndex + 1)) ??
+                                        getPropertyAtPath(Config.defaults, array.slice(0, currentIndex + 1)) ??
+                                        {};
+                                    // console.log(5, path, currentValue, currentIndex, previousValue[currentValue], previousValue);
+                                    return previousValue[currentValue];
+                                }
+                            },
+                            data
+                        );
                     }
                 }
                 return data;
@@ -404,7 +404,13 @@ namespace exports {
             this.saveChanges({ theme: value ?? Config.defaults.theme });
         }
         public get actualTheme(): "dark" | "light" | "blue" {
-            return this.theme === "auto" ? (nativeTheme.shouldUseDarkColors ? "dark" : "light") : this.theme;
+            return (
+                this.theme === "auto" ?
+                    nativeTheme.shouldUseDarkColors ?
+                        "dark"
+                    :   "light"
+                :   this.theme
+            );
         }
         public get debugHUD(): (typeof ConfigConstants.debugOverlayModeList)[number] {
             return this.getConfigData().debugHUD ?? Config.defaults.debugHUD;
@@ -537,7 +543,7 @@ namespace exports {
             "windows-10-edition-beta": "Windows 10 Edition Beta",
             latest: "Latest",
         } satisfies { [key in (typeof config)["panorama"]]: string };
-        export const latestConfig: Exclude<typeof panoramaList[number], "off" | "latest"> = "mounts-of-mayhem";
+        export const latestConfig: Exclude<(typeof panoramaList)[number], "off" | "latest"> = "mounts-of-mayhem";
     }
 
     /**

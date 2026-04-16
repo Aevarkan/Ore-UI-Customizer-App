@@ -395,19 +395,18 @@ export class InstallationManager {
             if (existsSync(MicrosoftGameConfigPath)) {
                 details.isGDK = true;
             }
-            const AppxManifestXMLContent: string = existsSync(MicrosoftGameConfigPath)
-                ? readFileSync(MicrosoftGameConfigPath, "utf-8")
-                : readFileSync(AppxManifestXMLPath, "utf-8");
+            const AppxManifestXMLContent: string =
+                existsSync(MicrosoftGameConfigPath) ? readFileSync(MicrosoftGameConfigPath, "utf-8") : readFileSync(AppxManifestXMLPath, "utf-8");
             const AppxManifestXMLVersion: `${number}.${number}.${number}.${number}` | undefined = AppxManifestXMLContent.match(
                 /<Identity\s+?Name="(?:Microsoft\.MinecraftUWP|Microsoft\.MinecraftWindowsBeta|Microsoft\.Minecraft[^"]*)"\s+?Publisher="[^"]*"\s+?Version="([\d.]+)"/i
             )?.[1] as `${number}.${number}.${number}.${number}` | undefined;
             const [AppxManifestPhoneProductId, AppxManifestPhonePublisherId]: [
                 AppxManifestPhoneProductId: string | undefined,
-                AppxManifestPhonePublisherId: string | undefined
+                AppxManifestPhonePublisherId: string | undefined,
             ] =
                 (AppxManifestXMLContent.match(/<mp:PhoneIdentity PhoneProductId="([a-f0-9-]+)" PhonePublisherId="([a-f0-9-]+)" \/>/)?.slice(1, 3) as [
                     AppxManifestPhoneProductId: string | undefined,
-                    AppxManifestPhonePublisherId: string | undefined
+                    AppxManifestPhonePublisherId: string | undefined,
                 ]) ?? [];
             if (!AppxManifestXMLVersion) {
             } else {
@@ -432,11 +431,9 @@ export class InstallationManager {
                     )}` as const;
                 }
                 details.channel =
-                    AppxManifestXMLEdition === "microsoft.minecraftuwp"
-                        ? "Release"
-                        : AppxManifestXMLEdition === "microsoft.minecraftwindowsbeta"
-                        ? "Preview"
-                        : "Unknown";
+                    AppxManifestXMLEdition === "microsoft.minecraftuwp" ? "Release"
+                    : AppxManifestXMLEdition === "microsoft.minecraftwindowsbeta" ? "Preview"
+                    : "Unknown";
                 details.dev = AppxManifestPhonePublisherId === "00000000-0000-0000-0000-000000000000"; // TODO: Figure out how to check this for GDK builds.
                 if (includeInstallationStatus) details.installationStatus = InstallationManager.getInstallationStatusOfVersionFolder(versionFolderPath);
                 else delete details.installationStatus;
@@ -444,7 +441,7 @@ export class InstallationManager {
                     major: number,
                     minor: number,
                     patch: number,
-                    revision: number
+                    revision: number,
                 ];
                 return details;
             }
@@ -558,7 +555,10 @@ export class VersionFolder implements Omit<VersionFolderVersionDetailsExtended, 
      */
     public getDisplayVersionColoredHTML(this: Pick<VersionFolderVersionDetails, "version" | "channel" | "dev">): string {
         return `<span style="color: #00FF88">v${this.version.join(".")}</span><span style="color: #00FFFF"> (</span><span style="color: ${
-            this.channel === "Release" ? "#00FF00" : this.channel === "Preview" ? "#FFFF00" : this.channel === "Beta" ? "#FF8800" : "#FF0000"
+            this.channel === "Release" ? "#00FF00"
+            : this.channel === "Preview" ? "#FFFF00"
+            : this.channel === "Beta" ? "#FF8800"
+            : "#FF0000"
         }">${this.channel}</span>${
             this.dev ? `<span style="color: #00FFFF"> [</span><span style="color: #FF0000">Dev</span><span style="color: #00FFFF">]</span>` : ""
         }<span style="color: #00FFFF">)</span>`;
@@ -802,26 +802,27 @@ export class VersionFolder implements Omit<VersionFolderVersionDetailsExtended, 
     public async install(showProgressBar: boolean = true): Promise<void> {
         const dataFolderSubpath: ReturnType<(typeof InstallationManager)["getDataFolderSubpathOfVersionFolder"]> = this.getDataFolderSubpath();
         if (!dataFolderSubpath) throw new ReferenceError("Failed to get data folder subpath of version folder.");
-        const progressBar: ProgressBar | undefined = showProgressBar
-            ? new ProgressBar({
-                  detail: "Preparing to install...",
-                  abortOnError: true,
-                  indeterminate: true,
-                  title: "Installing Ore UI Customizer",
-                  text: "Preparing to install...",
-                  browserWindow: {
-                      closable: false,
-                      parent: getCurrentWindow(),
-                      icon: "./resources/icon.png",
-                  },
-                  completionEnabled: false,
-              })
-            : undefined;
+        const progressBar: ProgressBar | undefined =
+            showProgressBar ?
+                new ProgressBar({
+                    detail: "Preparing to install...",
+                    abortOnError: true,
+                    indeterminate: true,
+                    title: "Installing Ore UI Customizer",
+                    text: "Preparing to install...",
+                    browserWindow: {
+                        closable: false,
+                        parent: getCurrentWindow(),
+                        icon: "./resources/icon.png",
+                    },
+                    completionEnabled: false,
+                })
+            :   undefined;
 
-        progressBar &&
-            (await new Promise((resolve: (value: void) => void): Electron.WebContents | undefined =>
+        if (progressBar)
+            await new Promise((resolve: (value: void) => void): Electron.WebContents | undefined =>
                 progressBar?._window?.webContents.on("did-finish-load", resolve)
-            ));
+            );
         try {
             /**
              * The path to the current backup folder location.
@@ -1206,21 +1207,22 @@ export class VersionFolder implements Omit<VersionFolderVersionDetailsExtended, 
         const dataFolderSubpath: string | undefined = this.getDataFolderSubpath();
         if (!dataFolderSubpath) throw new ReferenceError("Could not find data folder subpath.");
         if (this.channel !== "Release" && this.channel !== "Preview") throw new TypeError("Only Release and Preview channels' GUI folders can be repaired.");
-        const progressBar: ProgressBar | undefined = showProgressBar
-            ? new ProgressBar({
-                  detail: "Fetching list of available backups...",
-                  abortOnError: true,
-                  indeterminate: true,
-                  title: "Repairing GUI Folder",
-                  text: "Checking for available backup...",
-                  browserWindow: {
-                      closable: true,
-                      parent: getCurrentWindow(),
-                      icon: "./resources/icon.png",
-                  },
-                  completionEnabled: false,
-              })
-            : undefined;
+        const progressBar: ProgressBar | undefined =
+            showProgressBar ?
+                new ProgressBar({
+                    detail: "Fetching list of available backups...",
+                    abortOnError: true,
+                    indeterminate: true,
+                    title: "Repairing GUI Folder",
+                    text: "Checking for available backup...",
+                    browserWindow: {
+                        closable: true,
+                        parent: getCurrentWindow(),
+                        icon: "./resources/icon.png",
+                    },
+                    completionEnabled: false,
+                })
+            :   undefined;
         const abortController: AbortController = new AbortController();
         // Have one signal so that once it is aborted, the function will not attempt anything else.
         const abortControllerSignal: AbortSignal = abortController.signal;
@@ -1512,17 +1514,15 @@ Body: ${(await downloadsListResponse.text()).slice(0, 1000)}`
             });
             if (!downloadsList) return false;
             abortControllerSignal.throwIfAborted();
-            const downloadLinksForVersion = currentVersionMSIXVCFilePath
-                ? null
-                : downloadsList[this.channel.toLowerCase() as Lowercase<typeof this.channel>][this.version.join(".")];
-            let tempVersion: string | null = tempVersionMSIXVCFilePath
-                ? null
-                : this.channel === "Release"
-                ? this.version.join(".") === "1.21.120.4"
-                    ? "1.21.121.1"
-                    : "1.21.120.4"
-                : this.version.join(".") === "1.21.120.21"
-                ? "1.21.120.22"
+            const downloadLinksForVersion =
+                currentVersionMSIXVCFilePath ? null : downloadsList[this.channel.toLowerCase() as Lowercase<typeof this.channel>][this.version.join(".")];
+            let tempVersion: string | null =
+                tempVersionMSIXVCFilePath ? null
+                : this.channel === "Release" ?
+                    this.version.join(".") === "1.21.120.4" ?
+                        "1.21.121.1"
+                    :   "1.21.120.4"
+                : this.version.join(".") === "1.21.120.21" ? "1.21.120.22"
                 : "1.21.120.21";
             if (!downloadLinksForVersion?.length) {
                 const shouldReturn: boolean = await dialog
@@ -1602,11 +1602,11 @@ Body: ${(await downloadsListResponse.text()).slice(0, 1000)}`
                             message: `The list of Minecraft version download links does not contain the download link for the target temporary Minecraft version to downgrade to (${tempVersion}).\nIf you already have a .msixvc file for a version of Minecraft other than the currently installed one (${this.version.join(
                                 "."
                             )}) downloaded on your device you can select the "Select .msixvc File" option below and select the .msixvc file, and the app will use that.\n${
-                                alternativeVersionsAvailable
-                                    ? `If not, please click "Select Temp Version" and select a version to download and use as the temp version.`
-                                    : `No alternative versions were found in the version download links list, so if you don't have a .msixvc file for a version of Minecraft other than the currently installed one (${this.version.join(
-                                          "."
-                                      )}), then the repair cannot proceed, so please click "Cancel" below.`
+                                alternativeVersionsAvailable ?
+                                    `If not, please click "Select Temp Version" and select a version to download and use as the temp version.`
+                                :   `No alternative versions were found in the version download links list, so if you don't have a .msixvc file for a version of Minecraft other than the currently installed one (${this.version.join(
+                                        "."
+                                    )}), then the repair cannot proceed, so please click "Cancel" below.`
                             }`,
                             buttons: ["Select .msixvc File", ...(alternativeVersionsAvailable ? ["Select Temp Version"] : []), "Cancel"],
                             noLink: true,
@@ -1700,98 +1700,96 @@ Body: ${(await downloadsListResponse.text()).slice(0, 1000)}`
                         await downloadFileWithProgress(
                             downloadLinks[Math.floor(Math.random() * downloadLinks.length)]!,
                             outputPath,
-                            progressBar
-                                ? {
-                                      onFetched(_response, stats) {
-                                          progressBar.detail = `Downloading (<span style="font-family: monospace;">0 bytes${
-                                              stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
-                                          }</span>) (<span style="font-family: monospace;">0 chunks</span>) (<span style="font-family: monospace;">0 bytes/s</span>)...${
-                                              stats.totalSize !== null ? `<br/>Time remaining: <span style="font-family: monospace;">Calculating...</span>` : ""
-                                          }`;
-                                          if (stats.totalSize !== null) {
-                                              progressBar.indeterminate = false;
-                                              progressBar.maxValue = stats.totalSize!;
-                                          }
-                                      },
-                                      onComplete(stats) {
-                                          progressBar.detail = `Done.`;
-                                          if (stats.totalSize !== null) progressBar.value = progressBar.maxValue;
-                                      },
-                                      onProgress(stats) {
-                                          progressBar.detail = `Downloading (<span style="font-family: monospace;">${formatFileSizeBinary(
-                                              stats.downloadedBytes,
-                                              { trailingZeros: true }
-                                          )}${
-                                              stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
-                                          }</span>) (<span style="font-family: monospace;">${
-                                              stats.chunkCount
-                                          } chunks</span>) (<span style="font-family: monospace;">${formatFileSizeBinary(
-                                              stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000),
-                                              { trailingZeros: true }
-                                          )}/s</span>)...${
-                                              stats.totalSize !== null
-                                                  ? `<br/>Time remaining: <span style="font-family: monospace;">${
-                                                        // TODO: Make this use the `moment` node module to format the time.
-                                                        Math.round(
-                                                            (stats.totalSize - stats.downloadedBytes) /
-                                                                (stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000))
-                                                        )
-                                                    }s</span>`
-                                                  : ""
-                                          }`;
-                                          progressBar.value = stats.downloadedBytes;
-                                      },
-                                      async onEnd(endReason) {
-                                          if (endReason.reason === "Abort" || endReason.reason === "Error") {
-                                              // This must be before any awaits are run, so that the promise is created before the catch statement is triggered.
-                                              waitForDownloadFileAbortCleanupPromise = Promise.withResolvers();
-                                          }
-                                          try {
-                                              try {
-                                                  if (endReason.reason === "Abort") {
-                                                      const canceledByUser: boolean =
-                                                          (endReason.cause instanceof DOMException
-                                                              ? endReason.cause
-                                                              : endReason.cause.cause instanceof Error || endReason.cause.cause instanceof DOMException
-                                                              ? endReason.cause.cause
-                                                              : undefined
-                                                          )?.message === "Canceled by user";
-                                                      dialog.showMessageBoxSync(getCurrentWindow(), {
-                                                          type: "info",
-                                                          title: canceledByUser ? "Canceled" : "Aborted",
-                                                          message: `Download was ${canceledByUser ? "canceled" : "aborted"}.`,
-                                                          detail:
-                                                              endReason.cause instanceof DOMException
-                                                                  ? String(endReason.cause)
-                                                                  : endReason.cause + "\n" + "Cause: " + endReason.cause.cause,
-                                                          buttons: ["OK"],
-                                                          noLink: true,
-                                                      });
-                                                  } else if (endReason.reason === "Error") {
-                                                      dialog.showMessageBoxSync(getCurrentWindow(), {
-                                                          type: "error",
-                                                          title: "Error",
-                                                          message: `An error occurred while downloading the .msixvc file for the temp version (${tempVersion}).`,
-                                                          detail: String(endReason.error),
-                                                          buttons: ["OK"],
-                                                          noLink: true,
-                                                      });
-                                                  }
-                                              } finally {
-                                                  if (
-                                                      (endReason.reason === "Abort" || endReason.reason === "Error") &&
-                                                      endReason.stats.downloadStartTime &&
-                                                      !endReason.stats.downloadTime
-                                                  ) {
-                                                      await rm(outputPath, { force: true });
-                                                  }
-                                              }
-                                          } finally {
-                                              waitForDownloadFileAbortCleanupPromise?.resolve();
-                                          }
-                                      },
-                                  }
-                                : {},
+                            progressBar ?
+                                {
+                                    onFetched(_response, stats) {
+                                        progressBar.detail = `Downloading (<span style="font-family: monospace;">0 bytes${
+                                            stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
+                                        }</span>) (<span style="font-family: monospace;">0 chunks</span>) (<span style="font-family: monospace;">0 bytes/s</span>)...${
+                                            stats.totalSize !== null ? `<br/>Time remaining: <span style="font-family: monospace;">Calculating...</span>` : ""
+                                        }`;
+                                        if (stats.totalSize !== null) {
+                                            progressBar.indeterminate = false;
+                                            progressBar.maxValue = stats.totalSize!;
+                                        }
+                                    },
+                                    onComplete(stats) {
+                                        progressBar.detail = `Done.`;
+                                        if (stats.totalSize !== null) progressBar.value = progressBar.maxValue;
+                                    },
+                                    onProgress(stats) {
+                                        progressBar.detail = `Downloading (<span style="font-family: monospace;">${formatFileSizeBinary(stats.downloadedBytes, {
+                                            trailingZeros: true,
+                                        })}${
+                                            stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
+                                        }</span>) (<span style="font-family: monospace;">${
+                                            stats.chunkCount
+                                        } chunks</span>) (<span style="font-family: monospace;">${formatFileSizeBinary(
+                                            stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000),
+                                            { trailingZeros: true }
+                                        )}/s</span>)...${
+                                            stats.totalSize !== null ?
+                                                `<br/>Time remaining: <span style="font-family: monospace;">${
+                                                    // TODO: Make this use the `moment` node module to format the time.
+                                                    Math.round(
+                                                        (stats.totalSize - stats.downloadedBytes) /
+                                                            (stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000))
+                                                    )
+                                                }s</span>`
+                                            :   ""
+                                        }`;
+                                        progressBar.value = stats.downloadedBytes;
+                                    },
+                                    async onEnd(endReason) {
+                                        if (endReason.reason === "Abort" || endReason.reason === "Error") {
+                                            // This must be before any awaits are run, so that the promise is created before the catch statement is triggered.
+                                            waitForDownloadFileAbortCleanupPromise = Promise.withResolvers();
+                                        }
+                                        try {
+                                            try {
+                                                if (endReason.reason === "Abort") {
+                                                    const canceledByUser: boolean =
+                                                        (endReason.cause instanceof DOMException ? endReason.cause
+                                                        : endReason.cause.cause instanceof Error || endReason.cause.cause instanceof DOMException ?
+                                                            endReason.cause.cause
+                                                        :   undefined
+                                                        )?.message === "Canceled by user";
+                                                    dialog.showMessageBoxSync(getCurrentWindow(), {
+                                                        type: "info",
+                                                        title: canceledByUser ? "Canceled" : "Aborted",
+                                                        message: `Download was ${canceledByUser ? "canceled" : "aborted"}.`,
+                                                        detail:
+                                                            endReason.cause instanceof DOMException ?
+                                                                String(endReason.cause)
+                                                            :   endReason.cause + "\n" + "Cause: " + endReason.cause.cause,
+                                                        buttons: ["OK"],
+                                                        noLink: true,
+                                                    });
+                                                } else if (endReason.reason === "Error") {
+                                                    dialog.showMessageBoxSync(getCurrentWindow(), {
+                                                        type: "error",
+                                                        title: "Error",
+                                                        message: `An error occurred while downloading the .msixvc file for the temp version (${tempVersion}).`,
+                                                        detail: String(endReason.error),
+                                                        buttons: ["OK"],
+                                                        noLink: true,
+                                                    });
+                                                }
+                                            } finally {
+                                                if (
+                                                    (endReason.reason === "Abort" || endReason.reason === "Error") &&
+                                                    endReason.stats.downloadStartTime &&
+                                                    !endReason.stats.downloadTime
+                                                ) {
+                                                    await rm(outputPath, { force: true });
+                                                }
+                                            }
+                                        } finally {
+                                            waitForDownloadFileAbortCleanupPromise?.resolve();
+                                        }
+                                    },
+                                }
+                            :   {},
                             {
                                 signal: abortControllerSignal,
                             }
@@ -1829,114 +1827,112 @@ Body: ${(await downloadsListResponse.text()).slice(0, 1000)}`
                         await downloadFileWithProgress(
                             downloadLinksForVersion[Math.floor(Math.random() * downloadLinksForVersion.length)]!,
                             outputPath,
-                            progressBar
-                                ? {
-                                      onFetched(_response, stats) {
-                                          progressBar.detail = `Downloading (<span style="font-family: monospace;">0 bytes${
-                                              stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
-                                          }</span>) (<span style="font-family: monospace;">0 chunks</span>) (<span style="font-family: monospace;">0 bytes/s</span>)...${
-                                              stats.totalSize !== null ? `<br/>Time remaining: <span style="font-family: monospace;">Calculating...</span>` : ""
-                                          }`;
-                                          if (stats.totalSize !== null) {
-                                              progressBar.indeterminate = false;
-                                              progressBar.maxValue = stats.totalSize!;
-                                          }
-                                      },
-                                      onComplete(stats) {
-                                          progressBar.detail = `Done.`;
-                                          if (stats.totalSize !== null) progressBar.value = progressBar.maxValue;
-                                      },
-                                      onProgress(stats) {
-                                          progressBar.detail = `Downloading (<span style="font-family: monospace;">${formatFileSizeBinary(
-                                              stats.downloadedBytes,
-                                              { trailingZeros: true }
-                                          )}${
-                                              stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
-                                          }</span>) (<span style="font-family: monospace;">${
-                                              stats.chunkCount
-                                          } chunks</span>) (<span style="font-family: monospace;">${formatFileSizeBinary(
-                                              stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000),
-                                              { trailingZeros: true }
-                                          )}/s</span>)...${
-                                              stats.totalSize !== null
-                                                  ? `<br/>Time remaining: <span style="font-family: monospace;">${
-                                                        // TODO: Make this use the `moment` node module to format the time.
-                                                        Math.round(
-                                                            (stats.totalSize - stats.downloadedBytes) /
-                                                                (stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000))
-                                                        )
-                                                    }s</span>`
-                                                  : ""
-                                          }`;
-                                          progressBar.value = stats.downloadedBytes;
-                                      },
-                                      async onEnd(endReason) {
-                                          if (endReason.reason === "Abort" || endReason.reason === "Error") {
-                                              // This must be before any awaits are run, so that the promise is created before the catch statement is triggered.
-                                              waitForDownloadFileAbortCleanupPromise = Promise.withResolvers();
-                                          }
-                                          try {
-                                              try {
-                                                  if (endReason.reason === "Abort") {
-                                                      const canceledByUser: boolean =
-                                                          (endReason.cause instanceof DOMException
-                                                              ? endReason.cause
-                                                              : endReason.cause.cause instanceof Error || endReason.cause.cause instanceof DOMException
-                                                              ? endReason.cause.cause
-                                                              : undefined
-                                                          )?.message === "Canceled by user";
-                                                      dialog.showMessageBoxSync(getCurrentWindow(), {
-                                                          type: "info",
-                                                          title: canceledByUser ? "Canceled" : "Aborted",
-                                                          message: `Download was ${canceledByUser ? "canceled" : "aborted"}.`,
-                                                          detail:
-                                                              endReason.cause instanceof DOMException
-                                                                  ? String(endReason.cause)
-                                                                  : endReason.cause + "\n" + "Cause: " + endReason.cause.cause,
-                                                          buttons: ["OK"],
-                                                          noLink: true,
-                                                      });
-                                                  } else if (endReason.reason === "Error") {
-                                                      dialog.showMessageBoxSync(getCurrentWindow(), {
-                                                          type: "error",
-                                                          title: "Error",
-                                                          message: `An error occurred while downloading the .msixvc file for the current version (${currentVersion}).`,
-                                                          detail: String(endReason.error),
-                                                          buttons: ["OK"],
-                                                          noLink: true,
-                                                      });
-                                                  }
-                                              } finally {
-                                                  if (
-                                                      (endReason.reason === "Abort" || endReason.reason === "Error") &&
-                                                      endReason.stats.downloadStartTime &&
-                                                      !endReason.stats.downloadTime
-                                                  ) {
-                                                      try {
-                                                          if (progressBar) {
-                                                              progressBar.indeterminate = true;
-                                                              progressBar.text = "Cleaning up...";
-                                                              progressBar.detail = "Removing corrupted .msixvc file...";
-                                                          }
-                                                      } catch (e) {
-                                                          console.error(e);
-                                                      }
-                                                      await rm(outputPath, { force: true });
-                                                      try {
-                                                          if (progressBar) {
-                                                              progressBar.detail = "Done.";
-                                                          }
-                                                      } catch (e) {
-                                                          console.error(e);
-                                                      }
-                                                  }
-                                              }
-                                          } finally {
-                                              waitForDownloadFileAbortCleanupPromise?.resolve();
-                                          }
-                                      },
-                                  }
-                                : {},
+                            progressBar ?
+                                {
+                                    onFetched(_response, stats) {
+                                        progressBar.detail = `Downloading (<span style="font-family: monospace;">0 bytes${
+                                            stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
+                                        }</span>) (<span style="font-family: monospace;">0 chunks</span>) (<span style="font-family: monospace;">0 bytes/s</span>)...${
+                                            stats.totalSize !== null ? `<br/>Time remaining: <span style="font-family: monospace;">Calculating...</span>` : ""
+                                        }`;
+                                        if (stats.totalSize !== null) {
+                                            progressBar.indeterminate = false;
+                                            progressBar.maxValue = stats.totalSize!;
+                                        }
+                                    },
+                                    onComplete(stats) {
+                                        progressBar.detail = `Done.`;
+                                        if (stats.totalSize !== null) progressBar.value = progressBar.maxValue;
+                                    },
+                                    onProgress(stats) {
+                                        progressBar.detail = `Downloading (<span style="font-family: monospace;">${formatFileSizeBinary(stats.downloadedBytes, {
+                                            trailingZeros: true,
+                                        })}${
+                                            stats.totalSize !== null ? `/${formatFileSizeBinary(stats.totalSize, { trailingZeros: true })}` : ""
+                                        }</span>) (<span style="font-family: monospace;">${
+                                            stats.chunkCount
+                                        } chunks</span>) (<span style="font-family: monospace;">${formatFileSizeBinary(
+                                            stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000),
+                                            { trailingZeros: true }
+                                        )}/s</span>)...${
+                                            stats.totalSize !== null ?
+                                                `<br/>Time remaining: <span style="font-family: monospace;">${
+                                                    // TODO: Make this use the `moment` node module to format the time.
+                                                    Math.round(
+                                                        (stats.totalSize - stats.downloadedBytes) /
+                                                            (stats.downloadedBytes / ((stats.chunkEndTime - stats.downloadStartTime) / 1000))
+                                                    )
+                                                }s</span>`
+                                            :   ""
+                                        }`;
+                                        progressBar.value = stats.downloadedBytes;
+                                    },
+                                    async onEnd(endReason) {
+                                        if (endReason.reason === "Abort" || endReason.reason === "Error") {
+                                            // This must be before any awaits are run, so that the promise is created before the catch statement is triggered.
+                                            waitForDownloadFileAbortCleanupPromise = Promise.withResolvers();
+                                        }
+                                        try {
+                                            try {
+                                                if (endReason.reason === "Abort") {
+                                                    const canceledByUser: boolean =
+                                                        (endReason.cause instanceof DOMException ? endReason.cause
+                                                        : endReason.cause.cause instanceof Error || endReason.cause.cause instanceof DOMException ?
+                                                            endReason.cause.cause
+                                                        :   undefined
+                                                        )?.message === "Canceled by user";
+                                                    dialog.showMessageBoxSync(getCurrentWindow(), {
+                                                        type: "info",
+                                                        title: canceledByUser ? "Canceled" : "Aborted",
+                                                        message: `Download was ${canceledByUser ? "canceled" : "aborted"}.`,
+                                                        detail:
+                                                            endReason.cause instanceof DOMException ?
+                                                                String(endReason.cause)
+                                                            :   endReason.cause + "\n" + "Cause: " + endReason.cause.cause,
+                                                        buttons: ["OK"],
+                                                        noLink: true,
+                                                    });
+                                                } else if (endReason.reason === "Error") {
+                                                    dialog.showMessageBoxSync(getCurrentWindow(), {
+                                                        type: "error",
+                                                        title: "Error",
+                                                        message: `An error occurred while downloading the .msixvc file for the current version (${currentVersion}).`,
+                                                        detail: String(endReason.error),
+                                                        buttons: ["OK"],
+                                                        noLink: true,
+                                                    });
+                                                }
+                                            } finally {
+                                                if (
+                                                    (endReason.reason === "Abort" || endReason.reason === "Error") &&
+                                                    endReason.stats.downloadStartTime &&
+                                                    !endReason.stats.downloadTime
+                                                ) {
+                                                    try {
+                                                        if (progressBar) {
+                                                            progressBar.indeterminate = true;
+                                                            progressBar.text = "Cleaning up...";
+                                                            progressBar.detail = "Removing corrupted .msixvc file...";
+                                                        }
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                    }
+                                                    await rm(outputPath, { force: true });
+                                                    try {
+                                                        if (progressBar) {
+                                                            progressBar.detail = "Done.";
+                                                        }
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                    }
+                                                }
+                                            }
+                                        } finally {
+                                            waitForDownloadFileAbortCleanupPromise?.resolve();
+                                        }
+                                    },
+                                }
+                            :   {},
                             {
                                 signal: abortControllerSignal,
                             }

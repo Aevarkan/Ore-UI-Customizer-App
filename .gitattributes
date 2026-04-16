@@ -1,0 +1,43 @@
+*.ps1      linguist-detectable
+*.xml      linguist-detectable
+*.json     linguist-detectable
+*.jsonc    linguist-detectable
+*.jsonl    linguist-detectable
+*.plist    linguist-detectable
+
+**/tsconfig.json -linguist-detectable
+**/jsconfig.json -linguist-detectable
+**/package.json -linguist-detectable
+**/package-lock.json -linguist-detectable
+**/.package-lock.json -linguist-detectable
+**/manifest.json -linguist-detectable
+**/.*rc.json  -linguist-detectable
+**/eslint.config.cjs -linguist-detectable
+test/**    -linguist-detectable
+deprecated/** -linguist-detectable
+development_scripts/** -linguist-detectable
+.vscode/** -linguist-detectable
+.github/** -linguist-detectable
+
+resources/assets/oreui/types.d.ts linguist-detectable
+resources/assets/oreui/shiki.bundle.js linguist-vendored
+resources/assets/oreui/shiki.bundle.d.ts linguist-vendored
+resources/assets/oreui/@ore-ui-types/** linguist-vendored
+resources/assets/oreui/css.js linguist-vendored linguist-generated
+resources/assets/oreui/css.js.map linguist-vendored linguist-generated
+resources/assets/oreui/css.d.ts linguist-vendored linguist-generated
+resources/assets/oreui/css.ts linguist-vendored
+resources/assets/oreui/class_path.js linguist-vendored linguist-generated
+resources/assets/oreui/class_path.js.map linguist-vendored linguist-generated
+resources/assets/oreui/class_path.d.ts linguist-vendored linguist-generated
+resources/assets/oreui/class_path.ts linguist-vendored
+resources/assets/oreui/JSONB.js linguist-generated
+resources/assets/oreui/JSONB.js.map linguist-generated
+resources/assets/oreui/JSONB.d.ts linguist-generated
+src/libs/** linguist-vendored
+src/utils/zip.js linguist-vendored
+src/utils/zip.d.ts linguist-vendored
+src/tinycolor2.d.ts linguist-vendored
+src/spectrum.css linguist-vendored
+src/spectrum.d.ts linguist-vendored
+src/spectrum.ts linguist-vendored

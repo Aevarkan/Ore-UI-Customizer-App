@@ -369,7 +369,7 @@ export default function PreferencesPage(): JSX.SpecificElement<"center"> {
                     }}
                     required
                     onInput={(event: JSX.TargetedInputEvent<HTMLInputElement>): void => {
-                        if (event.currentTarget.validity.badInput || !/^\d*\.?\d*$/.test(event.currentTarget.value)) {
+                        if (event.currentTarget.validity.badInput || (!/^\d*\.?\d*$/.test(event.currentTarget.value) && !/^1e[+-]\d+$/.test(event.currentTarget.value) && event.currentTarget.value !== "NaN")) {
                             event.currentTarget.style.outline = "calc(var(--gui-scale) * 1px) solid red";
                             event.currentTarget.style.color = "red";
                         } else {
@@ -383,7 +383,7 @@ export default function PreferencesPage(): JSX.SpecificElement<"center"> {
                         if (this.value === "") {
                             config.panoramaRotateSpeed = undefined;
                             this.valueAsNumber = config.panoramaRotateSpeed;
-                        } else if (!/^\d*\.?\d*$/.test(this.value)) {
+                        } else if (!/^\d*\.?\d*$/.test(this.value) && !/^1e[+-]\d+$/.test(this.value) && this.value !== "NaN") {
                             this.valueAsNumber = config.panoramaRotateSpeed;
                         } else {
                             config.panoramaRotateSpeed = this.valueAsNumber;

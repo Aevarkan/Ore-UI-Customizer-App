@@ -15,7 +15,6 @@ import ConfigEditorPage from "./pages/configEditor";
 import ConfigDetailsOverlayPage from "./overlay_pages/ConfigDetailsOverlayPage";
 import DebugOverlay from "./components/DebugOverlay";
 import { Cubemap } from "../src/libs/@hatchibombotar-cubemap/index.ts";
-// @ts-ignore This is a valid import.
 import "../src/libs/@hatchibombotar-cubemap/index.css";
 
 let isClosing: boolean = false;
@@ -129,7 +128,7 @@ window.addEventListener("beforeunload", async (event: BeforeUnloadEvent): Promis
     if (!event.defaultPrevented) {
         __signalsToAbortBeforeUnload__.forEach((signal: AbortController): void => {
             signal.abort(new DOMException("beforeunload", "AbortError"));
-            __signalsToAbortBeforeUnload__.includes(signal) && __signalsToAbortBeforeUnload__.splice(__signalsToAbortBeforeUnload__.indexOf(signal), 1);
+            if (__signalsToAbortBeforeUnload__.includes(signal)) __signalsToAbortBeforeUnload__.splice(__signalsToAbortBeforeUnload__.indexOf(signal), 1);
         });
         if (__promisesToResolveBeforeUnload__.length > 0) {
             event.preventDefault();
@@ -560,7 +559,7 @@ export function getMainPageContentPathID(): string {
         router.history.location.pathname.matchAll(/\/([^/]+)/g)
     ).map((match: RegExpExecArray): string | undefined => match[1] ?? "") as [
         LooseAutocomplete<`${CustomizerAppPage}`>?,
-        ...LooseAutocomplete<`${CustomizerAppPage}`>[]
+        ...LooseAutocomplete<`${CustomizerAppPage}`>[],
     ];
     switch (true) {
         case page[0] === undefined:
@@ -594,7 +593,12 @@ export function getMainPageContentPathID(): string {
 }
 
 export function updateSelectedLeftSidebarButton(mainPageContentID?: string): void {
-    mainPageContentID ??= lastRoute ? ("data" in lastRoute ? lastRoute.data.sidebarButtonID : "unknown") : "unknown";
+    mainPageContentID ??=
+        lastRoute ?
+            "data" in lastRoute ?
+                lastRoute.data.sidebarButtonID
+            :   "unknown"
+        :   "unknown";
     document
         .getElementById("left_sidebar")
         ?.querySelectorAll(".sidebar_button")

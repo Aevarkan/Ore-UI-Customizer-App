@@ -26,6 +26,8 @@
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/no-non-null-asserted-optional-chain": "off",
         "@typescript-eslint/no-unnecessary-type-constraint": "off",
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/triple-slash-reference": "off",
         "import/no-unresolved": "off",
         "no-inner-declarations": "off",
         "prefer-const": "off",
@@ -52,5 +54,7 @@
                 "browser": false
             }
         }
-    ]
+    ],
+    "ignorePatterns": [],
+    "root": true
 }

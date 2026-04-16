@@ -10,6 +10,12 @@ export class OreUIPreviewManager {
     }
 }
 
+// OreUIPreviewManager.createPreview(8927, {
+//     guiDistPath: String.raw`C:\XboxGames\Minecraft Preview for Windows\Content\data\gui\dist`,
+//     vanillaResourcePacksContainerFolderPath: String.raw`C:\XboxGames\Minecraft Preview for Windows\Content\data\resource_packs`,
+//     textsPath: String.raw`C:\XboxGames\Minecraft Preview for Windows\Content\data\resource_packs`,
+// });
+
 declare global {
     interface Window {
         logOreUIPreviewLoadedResourceLocations?: boolean | undefined;
@@ -72,24 +78,20 @@ export class OreUIPreview {
         const { app, BrowserWindow, globalShortcut, Menu } = require("@electron/remote") as typeof import("@electron/remote");
         const express = require("express") as typeof import("express");
         const server = express();
-        server.use(express.static(path.join(process.env.resourcesPath ?? process.resourcesPath, "ore-ui-viewer")));
         server.use(express.static(paths.guiDistPath));
+        server.use(express.static(path.join(process.env.resourcesPath ?? process.resourcesPath, "ore-ui-viewer")));
         if (paths.vanillaResourcePacksContainerFolderPath) {
             server.get(/rp\/.+/, (req, res) => {
                 const folders = readdirSync(paths.vanillaResourcePacksContainerFolderPath!, { withFileTypes: true })
                     .filter((dirent) => dirent.isDirectory())
                     .toSorted((a, b) =>
-                        a.name.startsWith("vanilla") && !b.name.startsWith("vanilla")
-                            ? 1
-                            : b.name.startsWith("vanilla") && !a.name.startsWith("vanilla")
-                            ? -1
-                            : a.name.startsWith("vanilla") && b.name.startsWith("vanilla")
-                            ? a.name === "vanilla"
-                                ? 1
-                                : b.name === "vanilla"
-                                ? -1
-                                : -a.name.localeCompare(b.name)
-                            : a.name.localeCompare(b.name)
+                        a.name.startsWith("vanilla") && !b.name.startsWith("vanilla") ? 1
+                        : b.name.startsWith("vanilla") && !a.name.startsWith("vanilla") ? -1
+                        : a.name.startsWith("vanilla") && b.name.startsWith("vanilla") ?
+                            a.name === "vanilla" ? 1
+                            : b.name === "vanilla" ? -1
+                            : -a.name.localeCompare(b.name)
+                        :   a.name.localeCompare(b.name)
                     );
                 for (const folder of folders) {
                     if (!existsSync(path.join(paths.vanillaResourcePacksContainerFolderPath!, folder.name, req.path.replace("/rp/", "")))) continue;
@@ -185,7 +187,9 @@ export class OreUIPreview {
                         `--config-data=${JSON.stringify(JSON.stringify(this.previewOptions))}`,
                         `--cubemap-images-path=${JSON.stringify("resource://images/cubemap/")}`,
                         ...(paths.textsPath ? [`--texts-path=${JSON.stringify(paths.textsPath)}`] : []),
-                        ...(paths.vanillaResourcePacksContainerFolderPath ? [`--ddui-path=${JSON.stringify(paths.vanillaResourcePacksContainerFolderPath)}`] : []),
+                        ...(paths.vanillaResourcePacksContainerFolderPath ?
+                            [`--ddui-path=${JSON.stringify(paths.vanillaResourcePacksContainerFolderPath)}`]
+                        :   []),
                     ],
                 },
             });
@@ -209,8 +213,7 @@ export class OreUIPreview {
 
             this.window.setMenu(newMenu);
 
-            // require("@electron/remote/main").enable(win.webContents);
-            app.setAppUserModelId("Minecraft - OreUI");
+            // (require("@electron/remote/main") as typeof import("@electron/remote/main")).enable(this.window.webContents);
 
             this.window.show();
             this.window.loadURL(`http://localhost:${port}/hbui`);
