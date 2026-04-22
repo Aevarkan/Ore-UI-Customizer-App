@@ -6,7 +6,7 @@ This app is still in beta, so please report any issues to you find [here](https:
 
 ## Prerequisites
 
-To use the app, you must be using a custom launcher, for example [Bedrock Launcher](https://bedrocklauncher.github.io). All custom launchers are supported, but if you are using a launcher other than the Windows or Linux bedrock launchers, then you must set where the app should look for the Minecraft versions in preferences, instructions for this will be on the installations tab if the app is unable to find any Minecraft versions.
+All custom launchers are supported, in addition to the official one, or no launcher at all, but if you are using a launcher other than the Windows or Linux bedrock launchers, then you must set where the app should look for the Minecraft versions in preferences, instructions for this will be on the installations tab if the app is unable to find any Minecraft versions.
 
 If you are on an Apple Silicon Mac, you must run the following command in the directory the app is in before you run the arm64 build of the app, otherwise it will throw an error that the app is damaged and could not be opened since the app is not signed:
 ```sh
