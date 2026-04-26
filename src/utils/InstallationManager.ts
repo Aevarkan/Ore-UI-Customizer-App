@@ -21,6 +21,9 @@ import { downloadFileWithProgress } from "./connectionUtils.ts";
 import { formatFileSizeBinary } from "./fileSizeUtils.ts";
 import { exec } from "node:child_process";
 import { runCommmand } from "./miscUtils.ts";
+import * as ini from "ini";
+import type { BinaryXMLDocument } from "binary-xml";
+const BinaryXML = require("binary-xml") as typeof import("binary-xml");
 const { dialog } = require("@electron/remote") as typeof import("@electron/remote");
 
 /**
@@ -389,9 +392,11 @@ export class InstallationManager {
             },
         } satisfies VersionFolderVersionDetailsExtended;
         // Windows
-        const AppxManifestXMLPath: string = path.join(versionFolderPath, "AppxManifest.xml");
-        const MicrosoftGameConfigPath: string = path.join(versionFolderPath, "MicrosoftGame.Config");
-        if (existsSync(AppxManifestXMLPath) || existsSync(MicrosoftGameConfigPath)) {
+        Windows: {
+            // TODO: Make this use XML parsing instead.
+            const AppxManifestXMLPath: string = path.join(versionFolderPath, "AppxManifest.xml");
+            const MicrosoftGameConfigPath: string = path.join(versionFolderPath, "MicrosoftGame.Config");
+            if (!(existsSync(AppxManifestXMLPath) || existsSync(MicrosoftGameConfigPath))) break Windows;
             if (existsSync(MicrosoftGameConfigPath)) {
                 details.isGDK = true;
             }
@@ -437,6 +442,7 @@ export class InstallationManager {
                 details.dev = AppxManifestPhonePublisherId === "00000000-0000-0000-0000-000000000000"; // TODO: Figure out how to check this for GDK builds.
                 if (includeInstallationStatus) details.installationStatus = InstallationManager.getInstallationStatusOfVersionFolder(versionFolderPath);
                 else delete details.installationStatus;
+                details.rawVersion = AppxManifestXMLVersion;
                 details.version = (version.split(".") as [`${number}`, `${number}`, `${number}`, `${number}`]).map(Number) as [
                     major: number,
                     minor: number,
@@ -446,9 +452,96 @@ export class InstallationManager {
                 return details;
             }
         }
-        // Linux
-        if (true /* TO-DO */) {
-            // TO-DO
+        // Linux/macOS
+        AndroidManifestXML: {
+            const AndroidManifestXMLPath: string = path.join(versionFolderPath, "AndroidManifest.xml");
+            if (!existsSync(AndroidManifestXMLPath)) break AndroidManifestXML;
+            try {
+                const AndroidManifestXMLData: BinaryXMLDocument = new BinaryXML(readFileSync(AndroidManifestXMLPath)).parse();
+                let AndroidManifestXMLVersionName: `${number}.${number}.${number}.${number}` | undefined;
+                let AndroidManifestXMLversionNameInvalid: string | undefined;
+                AndroidManifestXMLDataVersionNameSearch: for (const attribute of AndroidManifestXMLData.attributes) {
+                    if (attribute.nodeName !== "value") continue;
+                    if (attribute.typedValue.type !== "string") continue;
+                    if (!/^\d+\.\d+\.\d+\.\d+$/.test(attribute.typedValue.value)) {
+                        AndroidManifestXMLversionNameInvalid = attribute.typedValue.value;
+                        break AndroidManifestXMLDataVersionNameSearch;
+                    }
+                    AndroidManifestXMLVersionName = attribute.typedValue.value as `${number}.${number}.${number}.${number}`;
+                    break AndroidManifestXMLDataVersionNameSearch;
+                }
+                if (AndroidManifestXMLVersionName === undefined && AndroidManifestXMLversionNameInvalid === undefined) break AndroidManifestXML;
+                let AndroidManifestXMLEdition: LooseAutocomplete<"minecraft" | "minecraft-preview"> | undefined;
+                AndroidManifestXMLDataEditionSearch: for (const childNode of AndroidManifestXMLData.childNodes) {
+                    if (childNode.nodeName !== "application") continue;
+                    for (const childNode2 of childNode.childNodes) {
+                        if (childNode2.nodeName !== "activity") continue;
+                        for (const childNode3 of childNode2.childNodes) {
+                            if (childNode3.nodeName !== "intent-filter") continue;
+                            for (const childNode4 of childNode3.childNodes) {
+                                if (childNode4.nodeName !== "data") continue;
+                                for (const attribute of childNode4.attributes) {
+                                    if (attribute.nodeName !== "scheme") continue;
+                                    if (attribute.typedValue.type !== "string") continue;
+                                    AndroidManifestXMLEdition = attribute.typedValue.value;
+                                    break AndroidManifestXMLDataEditionSearch;
+                                }
+                            }
+                        }
+                    }
+                }
+                let AndroidManifestXMLEditionPackage: LooseAutocomplete<"com.mojang.minecraftpe" | "com.mojang.minecraftpe.Dev"> | undefined;
+                AndroidManifestXMLDataPackageSearch: for (const attribute of AndroidManifestXMLData.attributes) {
+                    if (attribute.nodeName !== "package") continue;
+                    if (attribute.typedValue.type !== "string") continue;
+                    AndroidManifestXMLEditionPackage = attribute.typedValue.value;
+                    break AndroidManifestXMLDataPackageSearch;
+                }
+                details.channel =
+                    AndroidManifestXMLEdition === "minecraft" ? "Release"
+                    : AndroidManifestXMLEdition === "minecraft-preview" ? "Beta"
+                    : "Unknown";
+                details.dev = AndroidManifestXMLEditionPackage === "com.mojang.minecraftpe.Dev";
+                if (AndroidManifestXMLEditionPackage === undefined) {
+                    console.warn("Missing AndroidManifest.xml package ID. Folder:", versionFolderPath, "Data:", AndroidManifestXMLData);
+                } else if (!["com.mojang.minecraftpe", "com.mojang.minecraftpe.Dev"].includes(AndroidManifestXMLEditionPackage)) {
+                    console.warn(
+                        "Unknown AndroidManifest.xml package ID:",
+                        AndroidManifestXMLEditionPackage,
+                        "Folder:",
+                        versionFolderPath,
+                        "Data:",
+                        AndroidManifestXMLData
+                    );
+                }
+                if (includeInstallationStatus) details.installationStatus = InstallationManager.getInstallationStatusOfVersionFolder(versionFolderPath);
+                else delete details.installationStatus;
+                if (AndroidManifestXMLVersionName === undefined) {
+                    if (AndroidManifestXMLversionNameInvalid === undefined) break AndroidManifestXML;
+                    details.rawVersion = AndroidManifestXMLversionNameInvalid;
+                    console.error(
+                        "Invalid version found in AndroidManifest.xml: ",
+                        AndroidManifestXMLversionNameInvalid,
+                        "Path:",
+                        AndroidManifestXMLPath,
+                        "Details:",
+                        details
+                    );
+                    break AndroidManifestXML;
+                } else {
+                    details.rawVersion = AndroidManifestXMLVersionName;
+                    details.version = (AndroidManifestXMLVersionName.split(".") as [`${number}`, `${number}`, `${number}`, `${number}`]).map(Number) as [
+                        major: number,
+                        minor: number,
+                        patch: number,
+                        revision: number,
+                    ];
+                }
+            } catch (e) {
+                console.error("Error parsing AndroidManifest.xml:", e, "Path:", AndroidManifestXMLPath, "Details:", details);
+                break AndroidManifestXML;
+            }
+            return details;
         }
         // Other
         return undefined;
