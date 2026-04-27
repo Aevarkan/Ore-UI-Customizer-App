@@ -107,8 +107,8 @@ namespace exports {
                 "%appdata%/.minecraft_bedrock/versions",
                 // MCPELauncher (Linux/macOS)
                 "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions",
-                "Home/.local/share/mcpelauncher",
-                "Home/Library/Application Support/mcpelauncher",
+                "Home/.local/share/mcpelauncher/versions",
+                "Home/Library/Application Support/mcpelauncher/versions",
                 // GDK Preview (Windows)
                 "%appdata%/../../../../XboxGames/Minecraft Preview for Windows",
                 "%appdata%/../../../../XboxGames/Minecraft Preview for Windows_1",
