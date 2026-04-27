@@ -80,7 +80,7 @@ const config: ForgeConfig = {
         new MakerDMG({
             // background // TODO: Make a background image for the DMG window.
             icon: "resources/icon.icns",
-            name: "Bedrock World Editor",
+            name: "Ore UI Customizer",
         }),
     ],
     publishers: [
@@ -207,13 +207,13 @@ const config: ForgeConfig = {
             if (process.platform !== "darwin") return;
 
             renameDMG: {
-                const targetPath: string = path.join(__dirname, "./out/make/Bedrock World Editor.dmg");
+                const targetPath: string = path.join(__dirname, "./out/make/Ore UI Customizer.dmg");
                 if (!existsSync(targetPath)) break renameDMG;
                 const targetResult: ForgeMakeResult | undefined = results.find((v: ForgeMakeResult): boolean => v.artifacts.includes(targetPath));
                 if (!targetResult) throw new ReferenceError(`Failed to get arch for "${targetPath}" when attempting to rename DMG.`);
                 const newPath: string = path.join(
                     targetPath,
-                    `../Bedrock World Editor-darwin-${targetResult.arch}-${(targetResult.packageJSON as typeof import("./package.json")).version}.dmg`
+                    `../Ore.UI.Customizer.App-darwin-${targetResult.arch}-${(targetResult.packageJSON as typeof import("./package.json")).version}.dmg`
                 );
                 targetResult.artifacts.splice(targetResult.artifacts.indexOf(targetPath), 1, newPath);
                 renameSync(targetPath, newPath);
