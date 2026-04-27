@@ -11,6 +11,8 @@ import { APP_DATA_FOLDER_PATH } from "./URLs";
 import process from "node:process";
 import { EventEmitter } from "node:events";
 import "../init/JSONB.ts";
+import "./version.ts";
+import semver from "semver";
 const nativeTheme =
     process.type === "browser" ?
         (require("electron") as typeof import("electron")).nativeTheme
@@ -130,6 +132,7 @@ namespace exports {
             panoramaRotateDirection: "counterclockwise",
             panoramaRotateSpeed: 2.5,
             volume: { master: 100, ui: 100 },
+            version: VERSION,
         } as const satisfies ConfigJSON);
         /**
          * The currently loaded data from the config file.
@@ -143,6 +146,33 @@ namespace exports {
                     this.#currentlyLoadedData = this.readConfigFile() ?? this.#currentlyLoadedData;
                 }
             });
+            this.handleConfigVersionUpdate();
+        }
+        /**
+         * Updates the config when the app is updated.
+         */
+        public handleConfigVersionUpdate(): void {
+            const currentConfigVersion: string = this.version;
+            if (semver.satisfies(currentConfigVersion, "< 1.0.0-beta.25")) {
+                const currentVersionFolderSearchLocations: string[] = this.versionFolderSearchLocations;
+                const originalLength: number = currentVersionFolderSearchLocations.length;
+                for (const path of [
+                    "Home/.var/app/io.mrarm.mcpelauncher/data/mcpelauncher/versions",
+                    "Home/.local/share/mcpelauncher/versions",
+                    "Home/Library/Application Support/mcpelauncher/versions",
+                    "%appdata%/../../../../XboxGames/Minecraft Preview for Windows",
+                    "%appdata%/../../../../XboxGames/Minecraft Preview for Windows_1",
+                    "%appdata%/../../../../XboxGames/Minecraft for Windows",
+                    "%appdata%/../../../../XboxGames/Minecraft for Windows_1",
+                    "%appdata%/../../../../XboxGames/7792D9CE-355A-493C-AFBD-768F4A77C3B0",
+                ]) {
+                    if (!currentVersionFolderSearchLocations.includes(path)) currentVersionFolderSearchLocations.push(path);
+                }
+                if (currentVersionFolderSearchLocations.length !== originalLength) this.versionFolderSearchLocations = currentVersionFolderSearchLocations;
+            }
+            if (semver.compareBuild(currentConfigVersion, VERSION) < 0) {
+                this.version = VERSION;
+            }
         }
         /**
          * Saves changes to the config file.
@@ -237,6 +267,17 @@ namespace exports {
                 writeFileSync(path.join(APP_DATA_FOLDER_PATH, "./config.json"), JSONB.stringify(Config.defaults, null, 4), { encoding: "utf-8" });
             }
             return { ...Config.defaults, ...JSONB.parse(readFileSync(path.join(APP_DATA_FOLDER_PATH, "./config.json"), { encoding: "utf-8" })) };
+        }
+        /**
+         * The newest version of the app that this config was used for.
+         *
+         * @default "0.0.0"
+         */
+        public get version(): string {
+            return this.getConfigData().version ?? "0.0.0";
+        }
+        public set version(value: string | undefined) {
+            this.saveChanges({ version: value ?? Config.defaults.version });
         }
         /**
          * The version folder search locations.

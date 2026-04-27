@@ -203,6 +203,41 @@ export class InstallationManager {
                 return "Not Installed";
             }
         }
+        if (existsSync(path.join(versionFolderPath, "assets/gui"))) {
+            if (existsSync(path.join(versionFolderPath, "assets/gui/dist/hbui/oreUICustomizer8CrafterConfig.js"))) {
+                if (existsSync(path.join(versionFolderPath, "assets/gui/dist/hbui/INSTALLING_ORE_UI_CUSTOMIZER"))) {
+                    return "Installing";
+                } else if (existsSync(path.join(versionFolderPath, "assets/gui/dist/hbui/UNINSTALLING_ORE_UI_CUSTOMIZER"))) {
+                    return "Uninstalling";
+                } else if (
+                    existsSync(path.join(versionFolderPath, "assets/gui/dist/hbui/OUIC_INSTALLATION_TARGETED_MC_VERSION")) &&
+                    readFileSync(path.join(versionFolderPath, "assets/gui/dist/hbui/OUIC_INSTALLATION_TARGETED_MC_VERSION"), "utf8").trim() !==
+                        ((v) => v && VersionFolder.prototype.getDisplayVersion.apply(v))(
+                            InstallationManager.getVersionFromVersionFolder(versionFolderPath, false)
+                        )
+                ) {
+                    backupCheckPrefix = "Corrupted (By Minecraft Update)";
+                } else if (existsSync(path.join(versionFolderPath, "assets/gui/dist/hbui/failed_plugins.json"))) {
+                    try {
+                        const failedPlugins: FailedPluginsJSON = JSON.parse(
+                            readFileSync(path.join(versionFolderPath, "assets/gui/dist/hbui/failed_plugins.json"), "utf8")
+                        );
+                        if (Object.keys(failedPlugins).length > 0) {
+                            return "Partially Failed Installation";
+                        } else {
+                            return "Installed";
+                        }
+                    } catch (e: any) {
+                        console.error(e, e?.stack);
+                        return "Installed";
+                    }
+                } else {
+                    return "Installed";
+                }
+            } else {
+                return "Not Installed";
+            }
+        }
         const dataFolderSubpath: "data" | "assets" | undefined = this.getDataFolderSubpathOfVersionFolder(versionFolderPath);
         if (!dataFolderSubpath) {
             return "Unknown (Backup Available)"; // TODO: This is supposed to say "No Version Data".
@@ -461,7 +496,7 @@ export class InstallationManager {
                 let AndroidManifestXMLVersionName: `${number}.${number}.${number}.${number}` | undefined;
                 let AndroidManifestXMLversionNameInvalid: string | undefined;
                 AndroidManifestXMLDataVersionNameSearch: for (const attribute of AndroidManifestXMLData.attributes) {
-                    if (attribute.nodeName !== "value") continue;
+                    if (attribute.nodeName !== "versionName") continue;
                     if (attribute.typedValue.type !== "string") continue;
                     if (!/^\d+\.\d+\.\d+\.\d+$/.test(attribute.typedValue.value)) {
                         AndroidManifestXMLversionNameInvalid = attribute.typedValue.value;
@@ -483,6 +518,8 @@ export class InstallationManager {
                                 for (const attribute of childNode4.attributes) {
                                     if (attribute.nodeName !== "scheme") continue;
                                     if (attribute.typedValue.type !== "string") continue;
+                                    if (attribute.typedValue.value === "file") continue;
+                                    if (attribute.typedValue.value === "content") continue;
                                     AndroidManifestXMLEdition = attribute.typedValue.value;
                                     break AndroidManifestXMLDataEditionSearch;
                                 }
@@ -630,6 +667,9 @@ export class VersionFolder implements Omit<VersionFolderVersionDetailsExtended, 
         }
         if (existsSync(path.join(this.path, "assets/assets/gui"))) {
             return path.join(this.path, "assets/assets/gui");
+        }
+        if (existsSync(path.join(this.path, "assets/gui"))) {
+            return path.join(this.path, "assets/gui");
         }
         throw new ReferenceError("Could not find gui folder.");
     }
