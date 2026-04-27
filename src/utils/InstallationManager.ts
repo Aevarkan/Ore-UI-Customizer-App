@@ -122,8 +122,9 @@ export interface FailedPluginsJSON {
 }
 
 export class InstallationManager {
-    public static getDataFolderSubpathOfVersionFolder(versionFolderPath: string): "data" | "assets" | undefined {
+    public static getDataFolderSubpathOfVersionFolder(versionFolderPath: string): "data" | "assets" | "assets/assets" | undefined {
         if (existsSync(path.join(versionFolderPath, "data"))) return "data";
+        if (existsSync(path.join(versionFolderPath, "assets/assets"))) return "assets/assets";
         if (existsSync(path.join(versionFolderPath, "assets"))) return "assets";
         return undefined;
     }
@@ -238,7 +239,7 @@ export class InstallationManager {
                 return "Not Installed";
             }
         }
-        const dataFolderSubpath: "data" | "assets" | undefined = this.getDataFolderSubpathOfVersionFolder(versionFolderPath);
+        const dataFolderSubpath: "data" | "assets" | "assets/assets" | undefined = this.getDataFolderSubpathOfVersionFolder(versionFolderPath);
         if (!dataFolderSubpath) {
             return "Unknown (Backup Available)"; // TODO: This is supposed to say "No Version Data".
         }
