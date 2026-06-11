@@ -369,7 +369,12 @@ export default function PreferencesPage(): JSX.SpecificElement<"center"> {
                     }}
                     required
                     onInput={(event: JSX.TargetedInputEvent<HTMLInputElement>): void => {
-                        if (event.currentTarget.validity.badInput || (!/^\d*\.?\d*$/.test(event.currentTarget.value) && !/^1e[+-]\d+$/.test(event.currentTarget.value) && event.currentTarget.value !== "NaN")) {
+                        if (
+                            event.currentTarget.validity.badInput ||
+                            (!/^\d*\.?\d*$/.test(event.currentTarget.value) &&
+                                !/^1e[+-]\d+$/.test(event.currentTarget.value) &&
+                                event.currentTarget.value !== "NaN")
+                        ) {
                             event.currentTarget.style.outline = "calc(var(--gui-scale) * 1px) solid red";
                             event.currentTarget.style.color = "red";
                         } else {
@@ -655,7 +660,7 @@ export function VersionFolderSearchLocationsOption(): JSX.SpecificElement<"div">
                         required
                         aria-autocomplete="none"
                         onInput={(event: JSX.TargetedInputEvent<HTMLInputElement>): void => {
-                            if (event.currentTarget.value.length === 0 || /[<>:"|?*]/.test(event.currentTarget.value)) {
+                            if (event.currentTarget.value.length === 0 || /[<>"|?*]/.test(event.currentTarget.value)) {
                                 event.currentTarget.style.color = "red";
                             } else {
                                 event.currentTarget.style.color = "";
@@ -883,6 +888,7 @@ export interface SettingsSidebarSectionButtonProps /*  extends JSX.HTMLAttribute
     sidebarRadioID: string;
     default?: boolean;
     disabled?: boolean;
+    onClick?: (event: JSX.TargetedMouseEvent<HTMLInputElement>) => void;
 }
 
 export function SettingsSidebarSectionButton(options: SettingsSidebarSectionButtonProps): JSX.SpecificElement<"div"> {
@@ -898,6 +904,7 @@ export function SettingsSidebarSectionButton(options: SettingsSidebarSectionButt
                     element.style.display = "none";
                 }
             });
+        options.onClick?.(event);
     }
     return (
         <label
@@ -940,9 +947,9 @@ export function SettingsSidebarSectionButton(options: SettingsSidebarSectionButt
                             options.imageSize?.[1] || options.hoverImageSize?.[1] ? Math.max(options.imageSize?.[1] ?? 0, options.hoverImageSize?.[1] ?? 0) : 17
                         }px * var(--gui-scale))`,
                         width:
-                            options.imageSize || options.hoverImageSize
-                                ? `calc(${Math.max(options.imageSize?.[0] ?? 0, options.hoverImageSize?.[0] ?? 0)} ?? 17}px * var(--gui-scale))`
-                                : undefined,
+                            options.imageSize || options.hoverImageSize ?
+                                `calc(${Math.max(options.imageSize?.[0] ?? 0, options.hoverImageSize?.[0] ?? 0)} ?? 17}px * var(--gui-scale))`
+                            :   undefined,
                         // display: "inline-block",
                         position: "absolute",
                         // marginTop: "calc(-2px * var(--gui-scale) / 3)",
@@ -982,9 +989,9 @@ export function SettingsSidebarSectionButton(options: SettingsSidebarSectionButt
                             style={{
                                 height: `calc(${options.hoverImageSize?.[1] ?? options.imageSize?.[1] ?? 17}px * var(--gui-scale))`,
                                 width:
-                                    options.imageSize || options.hoverImageSize
-                                        ? `calc(${options.hoverImageSize?.[0] ?? options.imageSize?.[0] ?? 17}px * var(--gui-scale))`
-                                        : undefined,
+                                    options.imageSize || options.hoverImageSize ?
+                                        `calc(${options.hoverImageSize?.[0] ?? options.imageSize?.[0] ?? 17}px * var(--gui-scale))`
+                                    :   undefined,
                                 imageRendering: "pixelated",
                                 zIndex: 2,
                                 position: "absolute",
@@ -1030,7 +1037,9 @@ export interface SettingsSidebarSectionProps extends JSX.HTMLAttributes<HTMLDivE
 export function SettingsSidebarSection(options: SettingsSidebarSectionProps): JSX.SpecificElement<"div"> {
     return (
         <>
-            {options.sectionHeader ? <p style={{ textAlign: "left", paddingTop: "20px", margin: 0 }}>{options.sectionHeader}</p> : undefined}
+            {options.sectionHeader ?
+                <p style={{ textAlign: "left", paddingTop: "20px", margin: 0 }}>{options.sectionHeader}</p>
+            :   undefined}
             <div class="button_container" {...options}></div>
         </>
     );

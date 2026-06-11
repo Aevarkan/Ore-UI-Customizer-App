@@ -118,6 +118,8 @@ namespace exports {
                 "%appdata%/../../../../XboxGames/Minecraft for Windows",
                 "%appdata%/../../../../XboxGames/Minecraft for Windows_1",
                 "%appdata%/../../../../XboxGames/7792D9CE-355A-493C-AFBD-768F4A77C3B0",
+                // LeviLauncher (Windows GDK)
+                "%appdata%/levilauncher.exe/versions",
             ],
             attemptToKeepCurrentConfigWhenUpdatingVersion: false,
             bypassImportJSPluginPrompt: false,
@@ -167,6 +169,14 @@ namespace exports {
                     "%appdata%/../../../../XboxGames/7792D9CE-355A-493C-AFBD-768F4A77C3B0",
                 ]) {
                     if (!currentVersionFolderSearchLocations.includes(path)) currentVersionFolderSearchLocations.push(path);
+                }
+                if (currentVersionFolderSearchLocations.length !== originalLength) this.versionFolderSearchLocations = currentVersionFolderSearchLocations;
+            }
+            if (semver.satisfies(currentConfigVersion, "< 1.0.0-beta.28")) {
+                const currentVersionFolderSearchLocations: string[] = this.versionFolderSearchLocations;
+                const originalLength: number = currentVersionFolderSearchLocations.length;
+                if (!currentVersionFolderSearchLocations.includes("%appdata%/levilauncher.exe/versions")) {
+                    currentVersionFolderSearchLocations.push("%appdata%/levilauncher.exe/versions");
                 }
                 if (currentVersionFolderSearchLocations.length !== originalLength) this.versionFolderSearchLocations = currentVersionFolderSearchLocations;
             }

@@ -9,10 +9,8 @@ import { APP_DATA_FOLDER_PATH, CONFIG_FOLDER_PATH } from "./URLs.ts";
 import EventEmitter from "node:events";
 import {
     defaultOreUICustomizerSettings,
-    type OreUICustomizerSettings,
-    type OreUICustomizerConfig as OreUICustomizerConfig_Type,
-    type LegacyOreUICustomizerConfigJSON,
 } from "./ore-ui-customizer-assets.ts";
+import type { OreUICustomizerSettings, OreUICustomizerConfig as OreUICustomizerConfig_Type, LegacyOreUICustomizerConfigJSON } from "ore-ui-customizer-types";
 import { format_version, resolveOreUICustomizerSettings } from "./ore-ui-customizer-api.ts";
 import { Dirent, existsSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import * as CommentJSON from "comment-json";

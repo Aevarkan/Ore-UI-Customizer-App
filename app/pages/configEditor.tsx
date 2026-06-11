@@ -12,7 +12,8 @@ import { SettingsSectionContainer, SettingsSidebar, SettingsSidebarSection, Sett
 import CommentJSON from "comment-json";
 import semver from "semver";
 import json5 from "json5";
-import { defaultOreUICustomizerSettings, type OreUICustomizerSettings } from "../../src/utils/ore-ui-customizer-assets";
+import { defaultOreUICustomizerSettings } from "../../src/utils/ore-ui-customizer-assets";
+import type { OreUICustomizerSettings } from "ore-ui-customizer-types";
 import TextBox from "../components/TextBox";
 import { createToast } from "../components/Toast";
 import type tinycolor from "../../src/tinycolor2";
@@ -614,7 +615,6 @@ const colorReplacements = {
         configColorReplacementsKey: key;
     };
 };
-
 export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
     const sectionRefs = {
         generalSectionRef: useRef<HTMLDivElement>(null),
@@ -751,21 +751,22 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
             },
         },
     } as const satisfies {
-        [key in keyof typeof metadataSectionInputRefs]: (typeof metadataSectionInputRefs)[key] extends RefObject<infer T extends EventTarget>
-            ? (event: JSX.TargetedInputEvent<T>) => void
-            : {
-                  [key2 in keyof (typeof metadataSectionInputRefs)[key]]: (event: JSX.TargetedInputEvent<HTMLInputElement>) => void;
-              };
+        [key in keyof typeof metadataSectionInputRefs]: (typeof metadataSectionInputRefs)[key] extends RefObject<infer T extends EventTarget> ?
+            (event: JSX.TargetedInputEvent<T>) => void
+        :   {
+                [key2 in keyof (typeof metadataSectionInputRefs)[key]]: (event: JSX.TargetedInputEvent<HTMLInputElement>) => void;
+            };
     };
     const configPath: string | null = router.history.location.searchParams.get("configPath");
     const configID: string | null = router.history.location.searchParams.get("configId");
     const configVersion: string | null = router.history.location.searchParams.get("configVersion");
     if (!configPath && (!configID || !configVersion)) return <h1>No config selected.</h1>;
-    const config: OreUICustomizerConfig | undefined = configPath
-        ? ConfigManager.loadedConfigs.find((config: OreUICustomizerConfig): boolean => config.filePath === configPath)
-        : ConfigManager.loadedConfigs.find(
-              (config: OreUICustomizerConfig): boolean => config.metadata.uuid === configID && config.metadata.version === configVersion
-          );
+    const config: OreUICustomizerConfig | undefined =
+        configPath ?
+            ConfigManager.loadedConfigs.find((config: OreUICustomizerConfig): boolean => config.filePath === configPath)
+        :   ConfigManager.loadedConfigs.find(
+                (config: OreUICustomizerConfig): boolean => config.metadata.uuid === configID && config.metadata.version === configVersion
+            );
     if (!config) return <h1>Config not found.</h1>;
     function GeneralSectionOptions(): JSX.Element {
         return (
@@ -790,19 +791,14 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                         void $(element).spectrum({
                             allowEmpty: true,
                             noColorSelectedText: "Do not replace color.",
-                            preferredFormat: /^#([0-9a-fA-F]{3}){1,2}$/.test(element.value!)
-                                ? "hex"
-                                : /^#([0-9a-fA-F]{4}){1,2}$/.test(element.value!)
-                                ? "hex8"
-                                : /^hsl/.test(element.value!)
-                                ? "hsl"
-                                : /^hsv/.test(element.value!)
-                                ? "hsl"
-                                : /^rgb/.test(element.value!)
-                                ? "rgb"
-                                : /^hsb/.test(element.value!)
-                                ? "hsb"
-                                : (element.getAttribute("format") as "rgb" | undefined) ?? "rgb",
+                            preferredFormat:
+                                /^#([0-9a-fA-F]{3}){1,2}$/.test(element.value!) ? "hex"
+                                : /^#([0-9a-fA-F]{4}){1,2}$/.test(element.value!) ? "hex8"
+                                : /^hsl/.test(element.value!) ? "hsl"
+                                : /^hsv/.test(element.value!) ? "hsl"
+                                : /^rgb/.test(element.value!) ? "rgb"
+                                : /^hsb/.test(element.value!) ? "hsb"
+                                : ((element.getAttribute("format") as "rgb" | undefined) ?? "rgb"),
                             beforeShow: (color: tinycolor.Instance, element: HTMLElement): void => {
                                 try {
                                     $(".sp-picker-container select").val(color?.getFormat());
@@ -817,6 +813,14 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                             showPalette: true,
                             showSelectionPalette: true,
                             localStorageKey: "ore-ui-customizer",
+                            change(_color: tinycolor.Instance): void {
+                                config!.oreUICustomizerConfig.colorReplacements ??= { ...defaultOreUICustomizerSettings.colorReplacements };
+                                config!.oreUICustomizerConfig.colorReplacements![
+                                    element.getAttribute(
+                                        "data-configColorReplacementsKey"
+                                    )! as (typeof colorReplacements)[keyof typeof colorReplacements]["configColorReplacementsKey"]
+                                ] = element.value;
+                            },
                         })
                 );
         });
@@ -825,16 +829,43 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                 <center>
                     <h1>Color Replacements Options</h1>
                 </center>
+                <p>
+                    <a
+                        href="https://www.youtube.com/@TheOctazen/featured"
+                        target="_blank"
+                        class="ndrg"
+                        onClick={(event: JSX.TargetedMouseEvent<HTMLAnchorElement>): void => {
+                            event.preventDefault();
+                            event.currentTarget.blur();
+                            shell.openExternal(event.currentTarget.href);
+                        }}
+                    >
+                        The Octazen
+                    </a>{" "}
+                    has made a guide to help with color customizations, you can see it here:{" "}
+                    <a
+                        href="https://bgdocs.netlify.app/#/ore_ui_colors/home"
+                        target="_blank"
+                        class="ndrg"
+                        onClick={(event: JSX.TargetedMouseEvent<HTMLAnchorElement>): void => {
+                            event.preventDefault();
+                            event.currentTarget.blur();
+                            shell.openExternal(event.currentTarget.href);
+                        }}
+                    >
+                        https://bgdocs.netlify.app/#/ore_ui_colors/home
+                    </a>
+                </p>
                 <form id="colors_options_box" style="text-align: left; width: fit-content" ref={colorsSectionRef}>
                     {...(
                         Object.entries(colorReplacements) as [
                             key: keyof typeof colorReplacements,
-                            value: (typeof colorReplacements)[keyof typeof colorReplacements]
+                            value: (typeof colorReplacements)[keyof typeof colorReplacements],
                         ][]
                     ).map(
                         ([key, value]: [
                             key: keyof typeof colorReplacements,
-                            value: (typeof colorReplacements)[keyof typeof colorReplacements]
+                            value: (typeof colorReplacements)[keyof typeof colorReplacements],
                         ]): JSX.Element => {
                             return (
                                 <>
@@ -854,6 +885,7 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                                                 id={`colors_customizer_settings_section_${key}`}
                                                 onTouchStart={(): void => {}}
                                                 style="width: 100%"
+                                                data-configColorReplacementsKey={value.configColorReplacementsKey}
                                             />
                                         </div>
                                     </div>
@@ -1202,14 +1234,15 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                 } else {
                     errorMessageDisplayTextBox.style.display = "none";
                     if (!config) return;
-                    config.oreUICustomizerConfig = value.oreUICustomizerConfig;
-                    config.oreUICustomizerVersion = value.oreUICustomizerVersion;
-                    config.metadata = {
-                        name: config.metadata.name,
-                        uuid: config.metadata.uuid,
-                        version: config.metadata.version,
-                        ...(value.metadata as Partial<SavedOreUICustomizerConfig_Type["metadata"]>),
-                        product_type: "config",
+                    config.manifest = {
+                        ...value,
+                        metadata: {
+                            name: config.metadata.name,
+                            uuid: config.metadata.uuid,
+                            version: config.metadata.version,
+                            ...(value.metadata as Partial<SavedOreUICustomizerConfig_Type["metadata"]>),
+                            product_type: "config",
+                        },
                     };
                 }
             }
@@ -1259,28 +1292,40 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
     function reloadSettings(): void {
         render(
             <GeneralSectionOptions />,
-            Array.from($(sectionRefs.generalSectionRef.current!).find("> div")).find((element: Element): boolean =>
-                element.hasAttribute("data-overlayscrollbars-viewport")
-            )!
+            sectionRefs.generalSectionRef.current!
+            // Array.from($(sectionRefs.generalSectionRef.current!).find("> div")).find((element: Element): boolean =>
+            //     element.hasAttribute("data-overlayscrollbars-viewport")
+            // )!
         );
         render(
             <ColorsSectionOptions />,
-            Array.from($(sectionRefs.colorsSectionRef.current!).find("> div")).find((element: Element): boolean =>
-                element.hasAttribute("data-overlayscrollbars-viewport")
-            )!
+            sectionRefs.colorsSectionRef.current!
+            // Array.from($(sectionRefs.colorsSectionRef.current!).find("> div")).find((element: Element): boolean =>
+            //     element.hasAttribute("data-overlayscrollbars-viewport")
+            // )!
         );
         render(
             <MetadataSectionOptions />,
-            Array.from($(sectionRefs.metadataSectionRef.current!).find("> div")).find((element: Element): boolean =>
-                element.hasAttribute("data-overlayscrollbars-viewport")
-            )!
+            sectionRefs.metadataSectionRef.current!
+            // Array.from($(sectionRefs.metadataSectionRef.current!).find("> div")).find((element: Element): boolean =>
+            //     element.hasAttribute("data-overlayscrollbars-viewport")
+            // )!
         );
         render(
             <RawConfigSectionOptions />,
-            Array.from($(sectionRefs.rawConfigSectionRef.current!).find("> div")).find((element: Element): boolean =>
-                element.hasAttribute("data-overlayscrollbars-viewport")
-            )!
+            sectionRefs.rawConfigSectionRef.current!
+            // Array.from($(sectionRefs.rawConfigSectionRef.current!).find("> div")).find((element: Element): boolean =>
+            //     element.hasAttribute("data-overlayscrollbars-viewport")
+            // )!
         );
+    }
+    let lastSettingsSidebarSection: string | null = null;
+    function onSettingsSidebarSectionSwitch(sectionID: string): void {
+        if (lastSettingsSidebarSection === sectionID) return;
+        if (lastSettingsSidebarSection === "raw_config" || sectionID === "raw_config") {
+            reloadSettings();
+        }
+        lastSettingsSidebarSection = sectionID;
     }
     useEffect((): (() => void) => {
         function configUpdatedCallback(updatedConfig: OreUICustomizerConfig): void {
@@ -1306,6 +1351,9 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                         image="resource://images/ui/glyphs/dev_glyph_color.png"
                         hoverImage="resource://images/ui/glyphs/dev_glyph.png"
                         imageSize={[14, 14]}
+                        onClick={(): void => {
+                            onSettingsSidebarSectionSwitch("general");
+                        }}
                         default
                     ></SettingsSidebarSectionButton>
                     <SettingsSidebarSectionButton
@@ -1316,6 +1364,9 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                         hoverImage="resource://images/ui/glyphs/color_picker_glyph.png"
                         imageSize={[16, 16]}
                         hoverImageSize={[18, 18]}
+                        onClick={(): void => {
+                            onSettingsSidebarSectionSwitch("colors");
+                        }}
                     ></SettingsSidebarSectionButton>
                     <SettingsSidebarSectionButton
                         text="Metadata"
@@ -1324,6 +1375,9 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                         image="resource://images/ui/glyphs/storageIconColor.png"
                         hoverImage="resource://images/ui/glyphs/storageIcon.png"
                         imageSize={[17, 16]}
+                        onClick={(): void => {
+                            onSettingsSidebarSectionSwitch("metadata");
+                        }}
                     ></SettingsSidebarSectionButton>
                 </SettingsSidebarSection>
                 <SettingsSidebarSection sectionHeader="Advanced">
@@ -1334,6 +1388,9 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                         image="resource://images/ui/glyphs/debug_glyph_color.png"
                         hoverImage="resource://images/ui/glyphs/debug_glyph.png"
                         imageSize={[14, 14]}
+                        onClick={(): void => {
+                            onSettingsSidebarSectionSwitch("raw_config");
+                        }}
                     ></SettingsSidebarSectionButton>
                 </SettingsSidebarSection>
                 <div style={{ flexGrow: 1 }} />
@@ -1413,10 +1470,13 @@ export default function ConfigEditorPage(): JSX.SpecificElement<"center"> {
                             event.preventDefault();
                             event.currentTarget.blur();
                             if (event.currentTarget.disabled) return;
+                            console.log(1);
                             config.saveChanges();
+                            console.log(2);
                             createToast({
                                 title: "Config saved",
                             });
+                            console.log(3);
                         }}
                     >
                         <div
