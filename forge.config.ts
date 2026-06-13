@@ -88,7 +88,7 @@ const config: ForgeConfig = {
             name: "@electron-forge/publisher-github",
             config: {
                 repository: {
-                    owner: "8Crafter-Studios",
+                    owner: "Aevarkan",
                     name: "Ore-UI-Customizer-App",
                 },
                 prerelease: true,
