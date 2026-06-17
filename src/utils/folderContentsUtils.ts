@@ -62,3 +62,88 @@ export function addFolderContents(directoryEntry: zip.ZipDirectoryEntry, basePat
         }
     }
 }
+
+/**
+ * Checks if two array buffers are equal.
+ *
+ * @param buf1 The first array buffer.
+ * @param buf2 The second array buffer.
+ * @returns True if the two array buffers are equal, false otherwise.
+ *
+ * @see https://stackoverflow.com/a/21554107/16872762
+ */
+function arrayBuffersAreEqual(buf1: ArrayBuffer, buf2: ArrayBuffer): boolean {
+    if (buf1.byteLength != buf2.byteLength) return false;
+    var dv1: Int8Array<ArrayBuffer> = new Int8Array(buf1);
+    var dv2: Int8Array<ArrayBuffer> = new Int8Array(buf2);
+    for (var i: number = 0; i != buf1.byteLength; i++) {
+        if (dv1[i] != dv2[i]) return false;
+    }
+    return true;
+}
+
+/**
+ * Compares the contents of two zips.
+ *
+ * @param zip1 The first zip.
+ * @param zip2 The second zip.
+ * @param checkMode The mode to check the contents with.
+ * @returns True if the contents are the same, false otherwise.
+ */
+export function compareZips(zip1: zip.FS, zip2: zip.FS, checkMode: "onlyNames" | "namesAndFileSizes" = "namesAndFileSizes"): boolean {
+    const zip1Entries: string[] = zip1.entries.map((v: zip.ZipEntry): string => v.getFullname());
+    const zip2Entries: string[] = zip2.entries.map((v: zip.ZipEntry): string => v.getFullname());
+    if (zip1Entries.length !== zip2Entries.length) return false;
+    for (let i = 0; i < zip1Entries.length; i++) {
+        if (zip1Entries[i] !== zip2Entries[i]) return false;
+    }
+    if (checkMode === "onlyNames") return true;
+    for (let i = 0; i < zip1Entries.length; i++) {
+        if (zip1Entries[i] === undefined && zip2Entries[i] === undefined) continue;
+        const zip1Entry: zip.ZipEntry | undefined = zip1.find(zip1Entries[i]!);
+        if (zip1Entry === undefined) return false;
+        const zip2Entry: zip.ZipEntry | undefined = zip2.find(zip1Entries[i]!);
+        if (zip2Entry === undefined) return false;
+        if (zip1Entry instanceof zip.fs.ZipFileEntry && zip2Entry instanceof zip.fs.ZipFileEntry) {
+            if (zip1Entry.uncompressedSize !== zip2Entry.uncompressedSize) return false;
+        } else if (zip1Entry instanceof zip.fs.ZipDirectoryEntry !== zip2Entry instanceof zip.fs.ZipDirectoryEntry) return false;
+    }
+    return true;
+}
+
+/**
+ * Compares the contents of two zips.
+ *
+ * @param zip1 The first zip.
+ * @param zip2 The second zip.
+ * @returns True if the contents are the same, false otherwise.
+ */
+export async function compareZipsFull(zip1: zip.FS, zip2: zip.FS): Promise<boolean> {
+    const zip1Entries: string[] = zip1.entries.map((v: zip.ZipEntry): string => v.getFullname());
+    const zip2Entries: string[] = zip2.entries.map((v: zip.ZipEntry): string => v.getFullname());
+    if (zip1Entries.length !== zip2Entries.length) return false;
+    for (let i = 0; i < zip1Entries.length; i++) {
+        if (zip1Entries[i] !== zip2Entries[i]) return false;
+    }
+    for (let i = 0; i < zip1Entries.length; i++) {
+        if (zip1Entries[i] === undefined) continue;
+        const zip1Entry: zip.ZipEntry | undefined = zip1.find(zip1Entries[i]!);
+        if (zip1Entry === undefined) return false;
+        const zip2Entry: zip.ZipEntry | undefined = zip2.find(zip1Entries[i]!);
+        if (zip2Entry === undefined) return false;
+        if (zip1Entry instanceof zip.fs.ZipFileEntry && zip2Entry instanceof zip.fs.ZipFileEntry) {
+            if (zip1Entry.uncompressedSize !== zip2Entry.uncompressedSize) return false;
+        } else if (zip1Entry instanceof zip.fs.ZipDirectoryEntry !== zip2Entry instanceof zip.fs.ZipDirectoryEntry) return false;
+    }
+    for (let i = 0; i < zip1Entries.length; i++) {
+        if (zip1Entries[i] === undefined) continue;
+        const zip1Entry: zip.ZipEntry | undefined = zip1.find(zip1Entries[i]!);
+        if (zip1Entry === undefined) return false;
+        const zip2Entry: zip.ZipEntry | undefined = zip2.find(zip1Entries[i]!);
+        if (zip2Entry === undefined) return false;
+        if (zip1Entry instanceof zip.fs.ZipFileEntry && zip2Entry instanceof zip.fs.ZipFileEntry) {
+            if (!arrayBuffersAreEqual(await (await zip1Entry.getBlob()).arrayBuffer(), await (await zip2Entry.getBlob()).arrayBuffer())) return false;
+        }
+    }
+    return true;
+}

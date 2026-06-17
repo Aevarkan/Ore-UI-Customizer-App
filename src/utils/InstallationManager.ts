@@ -12,7 +12,7 @@ import "./zip.js";
 import { ConfigManager } from "./ConfigManager.ts";
 import type { EncodedPluginData, OreUICustomizerSettings } from "ore-ui-customizer-types";
 import { applyMods, format_version } from "./ore-ui-customizer-api.ts";
-import { addFolderContentsReversed } from "./folderContentsUtils.ts";
+import { addFolderContentsReversed, compareZips, compareZipsFull } from "./folderContentsUtils.ts";
 import { OreUICustomizerPlugin, PluginManager, type MissingPluginInfo } from "./PluginManager.ts";
 import type { MessageBoxReturnValue, OpenDialogReturnValue } from "electron";
 import { createHash, getHashes, hash } from "node:crypto";
@@ -583,6 +583,24 @@ export class InstallationManager {
         }
         // Other
         return undefined;
+    }
+    public static async compareVersionFolderBackupContents(
+        versionFolder1: VersionFolder,
+        versionFolder2: VersionFolder,
+        mode: "onlyNames" | "namesAndFileSizes" | "full" = "namesAndFileSizes"
+    ): Promise<boolean> {
+        const backupPath1: string | undefined = versionFolder1.getBackupFolderZipPath();
+        if (backupPath1 === undefined) throw new ReferenceError("Backup zip path not found for version folder 1.");
+        const backupPath2: string | undefined = versionFolder2.getBackupFolderZipPath();
+        if (backupPath2 === undefined) throw new ReferenceError("Backup zip path not found for version folder 2.");
+        const zipFs1 = new zip.fs.FS();
+        const zipFs2 = new zip.fs.FS();
+        await Promise.all([
+            zipFs1.importUint8Array(new Uint8Array(require("fs").readFileSync(backupPath1).buffer)),
+            zipFs2.importUint8Array(new Uint8Array(require("fs").readFileSync(backupPath2).buffer)),
+        ]);
+        if (mode === "full") return await compareZipsFull(zipFs1, zipFs2);
+        return compareZips(zipFs1, zipFs2, mode);
     }
 }
 

@@ -568,6 +568,7 @@ namespace exports {
             "off",
             "beta",
             "buzzy-bees",
+            "chaos-cubed",
             "chase-the-skies",
             "copper-age",
             "creeking",
@@ -575,6 +576,7 @@ namespace exports {
             "mounts-of-mayhem",
             "preview",
             "spring-to-life",
+            "tiny-takeover",
             "trails-and-tales",
             "tricky-trials",
             "wild-update",
@@ -585,6 +587,7 @@ namespace exports {
             off: "Off",
             beta: "Beta",
             "buzzy-bees": "Buzzy Bees",
+            "chaos-cubed": "Chaos Cubed",
             "chase-the-skies": "Chase the Skies",
             "copper-age": "Copper Age",
             creeking: "Creeking",
@@ -592,13 +595,14 @@ namespace exports {
             "mounts-of-mayhem": "Mounts of Mayhem",
             preview: "Preview",
             "spring-to-life": "Spring to Life",
+            "tiny-takeover": "Tiny Takeover",
             "trails-and-tales": "Trails and Tales",
             "tricky-trials": "Tricky Trials",
             "wild-update": "Wild Update",
             "windows-10-edition-beta": "Windows 10 Edition Beta",
             latest: "Latest",
         } satisfies { [key in (typeof config)["panorama"]]: string };
-        export const latestConfig: Exclude<(typeof panoramaList)[number], "off" | "latest"> = "mounts-of-mayhem";
+        export const latestConfig: Exclude<(typeof panoramaList)[number], "off" | "latest"> = "chaos-cubed";
     }
 
     /**
