@@ -62,3 +62,8 @@ jobs:
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: npm run publish -- --arch="${{ matrix.arch }}"
+
+            - name: Attest artifacts
+              uses: actions/attest@v4
+              with:
+                subject-path: "${{ github.workspace }}/out/make/**/*"
